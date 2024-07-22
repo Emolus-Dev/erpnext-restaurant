@@ -65,7 +65,7 @@ fields_not_needed = ['parent', 'parenttype', 'restaurant_permissions', 'restaura
 fields_has_changed = ['cuisine']
 
 def after_install():
-    create_desk_forms()
+    # create_desk_forms()
     clear_custom_fields()
     set_custom_fields()
     set_custom_scripts()
