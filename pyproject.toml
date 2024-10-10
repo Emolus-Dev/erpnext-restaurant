@@ -1,0 +1,57 @@
+[project]
+name = "restaurant_management"
+authors = [{ name = "Emolus", email = "mario@emolus.com" }]
+description = "App description"
+requires-python = ">=3.10"
+readme = "README.md"
+dynamic = ["version"]
+
+# dependencies = [ "phonenumbers"]
+
+[tool.ruff]
+line-length = 120
+indent-width = 4
+show-fixes = true
+exclude = [
+    ".bzr",
+    ".direnv",
+    ".eggs",
+    ".git",
+    ".git-rewrite",
+    ".hg",
+    ".ipynb_checkpoints",
+    ".mypy_cache",
+    ".nox",
+    ".pants.d",
+    ".pyenv",
+    ".pytest_cache",
+    ".pytype",
+    ".ruff_cache",
+    ".svn",
+    ".tox",
+    ".venv",
+    ".vscode",
+    "__pypackages__",
+    "_build",
+    "buck-out",
+    "build",
+    "dist",
+    "node_modules",
+    "site-packages",
+    "venv",
+]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+docstring-code-format = true
+docstring-code-line-length = 80
+line-ending = "lf"
+
+[tool.ruff.lint]
+fixable = ["ALL"]
+
+[tool.ruff.lint.isort]
+order-by-type = true
+lines-after-imports = 1
+lines-between-types = 1
