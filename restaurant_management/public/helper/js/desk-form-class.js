@@ -1,281 +1,303 @@
 class DeskForm extends FrappeForm {
-	is_hide = true;
-	has_footer = true;
-	has_primary_action = true;
-  base_url = "restaurant_management.restaurant_management.doctype.desk_form.desk_form.";
+  is_hide = true;
+  has_footer = true;
+  has_primary_action = true;
+  base_url = 'restaurant_management.restaurant_management.doctype.desk_form.desk_form.';
 
-	constructor(options) {
-		super(options);
+  constructor(options) {
+    super(options);
 
-		this.in_modal = !this.location;
-		if (this.form_name) this.initialize();
-	}
+    this.in_modal = !this.location;
+    if (this.form_name) this.initialize();
+  }
 
-	remove(){
-		this.$$wrapper.remove();
-	}
+  remove() {
+    this.$$wrapper.remove();
+  }
 
-	get $$wrapper() {
-		return this.in_modal ? $(this._wrapper.$wrapper) : this._wrapper;
-	}
+  get $$wrapper() {
+    return this.in_modal ? $(this._wrapper.$wrapper) : this._wrapper;
+  }
 
-	get parent() {
-		return this.body;
-	}
+  get parent() {
+    return this.body;
+  }
 
-	get body() {
-		return this.in_modal ? $(this._wrapper.$wrapper).find('.modal-body') : this._wrapper;
-	}
+  get body() {
+    return this.in_modal ? $(this._wrapper.$wrapper).find('.modal-body') : this._wrapper;
+  }
 
-	get footer() {
-		return this.in_modal ? $(this._wrapper.$wrapper).find('.modal-footer') : this.body;
-	}
+  get footer() {
+    return this.in_modal ? $(this._wrapper.$wrapper).find('.modal-footer') : this.body;
+  }
 
-	get footer_buttons_wrapper() {
-		return this.footer.find('.standard-actions');
-	}
+  get footer_buttons_wrapper() {
+    return this.footer.find('.standard-actions');
+  }
 
-	get primary_btn() {
-		return this.footer.find('.btn-primary');
-	}
+  get primary_btn() {
+    return this.footer.find('.btn-primary');
+  }
 
-	get_primary_btn() {
-		return this.primary_btn;
-	}
+  get_primary_btn() {
+    return this.primary_btn;
+  }
 
-	field(field_name) {
-		return this.in_modal ? this._wrapper.fields_dict[field_name].$wrapper : null;
-	}
+  field(field_name) {
+    return this.in_modal ? this._wrapper.fields_dict[field_name].$wrapper : null;
+  }
 
-	get_value(fieldname) {
-		if(Array.isArray(fieldname)){
-			const values = [];
-			fieldname.forEach(field => {
-				values.push(this.get_value(field));
-			});
-			return values;
-		}
+  get_value(fieldname) {
+    if (Array.isArray(fieldname)) {
+      const values = [];
+      fieldname.forEach((field) => {
+        values.push(this.get_value(field));
+      });
+      return values;
+    }
 
-		return super.get_value(fieldname);
-	}
+    return super.get_value(fieldname);
+  }
 
-	async initialize() {
-		if(this.location){
-			this.location.append(`<div class="desk-form"></div>`);
-			this._wrapper = this.location.find('.desk-form');
-		}else{
-			this._wrapper = new frappe.ui.Dialog({
-				title: this.title,
-				on_hide: () => {
-					close_grid_and_dialog();
-				}
-			});
-		}
+  async initialize() {
+    if (this.location) {
+      this.location.append(`<div class="desk-form"></div>`);
+      this._wrapper = this.location.find('.desk-form');
+    } else {
+      this._wrapper = new frappe.ui.Dialog({
+        title: this.title,
+        on_hide: () => {
+          close_grid_and_dialog();
+        },
+      });
+    }
 
-		await super.initialize();
+    await super.initialize();
 
-		function close_grid_and_dialog() {
-			// close open grid row
-			var open_row = $(".grid-row-open");
-			if (open_row.length) {
-				var grid_row = open_row.data("grid_row");
-				grid_row.toggle_view(false);
-				return false;
-			}
+    function close_grid_and_dialog() {
+      // close open grid row
+      var open_row = $('.grid-row-open');
+      if (open_row.length) {
+        var grid_row = open_row.data('grid_row');
+        grid_row.toggle_view(false);
+        return false;
+      }
 
-			// close open dialog
-			if (cur_dialog && !cur_dialog.no_cancel_flag) {
-				//cur_dialog.cancel();
-				return false;
-			}
-		}
+      // close open dialog
+      if (cur_dialog && !cur_dialog.no_cancel_flag) {
+        //cur_dialog.cancel();
+        return false;
+      }
+    }
 
-		this.in_modal && this._wrapper && this._wrapper.wrapper.classList.add('modal-lg');
+    this.in_modal && this._wrapper && this._wrapper.wrapper.classList.add('modal-lg');
 
-		this.body.show();
-		this.show();
-	}
+    this.body.show();
+    this.show();
+  }
 
-	execute_primary_action() {
-		this.primary_btn.focus();
-		
-		if (this.primary_action) {
-			this.last_data ??= JSON.stringify(this.doc);
-			if (this.last_data != JSON.stringify(this.doc)) {
-				this.last_data = JSON.stringify(this.doc);
-				this.primary_action();
-			}
-		} else {
-			this.save();
-		}
-	}
+  execute_primary_action() {
+    this.primary_btn.focus();
 
-	async make() {
-		await super.make();
+    if (this.primary_action) {
+      this.last_data ??= JSON.stringify(this.doc);
+      if (this.last_data != JSON.stringify(this.doc)) {
+        this.last_data = JSON.stringify(this.doc);
+        this.primary_action();
+      }
+    } else {
+      this.save();
+    }
+  }
 
-		this.customize();
+  async make() {
+    await super.make();
 
-		if (this.has_primary_action && this.in_modal) {
-			const button = this.primary_btn;
-			if(button){
-				button.on('click', (event) => {
-					event.preventDefault();
-					event.stopPropagation();
-					this.execute_primary_action();
-				});
+    this.customize();
 
-				button.text(this.primary_action_label || __('Save'));
-				button.removeClass('hide');
-			}
+    if (this.has_primary_action && this.in_modal) {
+      const button = this.primary_btn;
+      if (button) {
+        button.on('click', (event) => {
+          event.preventDefault();
+          event.stopPropagation();
+          this.execute_primary_action();
+        });
 
-			this.footer.removeClass('hide');
-			this.footer.css('display', 'flex');
-		}else{
-			this.footer.hide();
-		}
+        button.text(this.primary_action_label || __('Save'));
+        button.removeClass('hide');
+      }
 
-		this.make_custom_buttons_wrapper();
-	}
+      this.footer.removeClass('hide');
+      this.footer.css('display', 'flex');
+    } else {
+      this.footer.hide();
+    }
 
-	customize() {
-		this.body.addClass('desk-form-body');
-	}
+    this.make_custom_buttons_wrapper();
+  }
 
-	load() {
-		this.before_load && this.before_load();
-		super.initialize();
-		this.initialize_fetches();
-	}
+  customize() {
+    this.body.addClass('desk-form-body');
+  }
 
-	set_value(fieldname, value, on_reload=false) {
-		const field = this.get_field(fieldname);
-		if (field) {
-			field.set_value && typeof field.set_value === "function" && field.set_value(value);
-		}
-	}
+  load() {
+    this.before_load && this.before_load();
+    super.initialize();
+    this.initialize_fetches();
+  }
 
-	async reload(doc=null, from_server=false) {
-		this.reloading = true;
-		this.before_load && this.before_load();
-		this.doc = doc || await this.get_doc(from_server);
+  set_value(fieldname, value, on_reload = false) {
+    const field = this.get_field(fieldname);
+    if (field) {
+      field.set_value && typeof field.set_value === 'function' && field.set_value(value);
+    }
+  }
 
-		this.doc = JSON.parse(JSON.stringify(this.doc));
+  async reload(doc = null, from_server = false) {
+    this.reloading = true;
+    this.before_load && this.before_load();
+    this.doc = doc || (await this.get_doc(from_server));
 
-		this.refresh();
-		
-		this.customize();
-		this.reloading = false;
-		
-		setTimeout(() => {
-			if(this.on_reload && typeof this.on_reload === "function"){
-				this.on_reload();
-			}
-			this.reloading = false;
-		}, 100);
-		
-		return this;
-	}
+    this.doc = JSON.parse(JSON.stringify(this.doc));
 
-	background_reload() {
-		this.get_doc(true).then(doc => {
-			this.doc = JSON.parse(JSON.stringify(doc));
-			this.refresh();
-		});
-	}
+    this.refresh();
 
-	show() {
-		this.is_hide = false;
-		this._wrapper.show();
-		return this;
-	}
+    this.customize();
+    this.reloading = false;
 
-	hide() {
-		this.is_hide = true;
-		this._wrapper.hide();
-		return this;
-	}
+    setTimeout(() => {
+      if (this.on_reload && typeof this.on_reload === 'function') {
+        this.on_reload();
+      }
+      this.reloading = false;
+    }, 100);
 
-	hide_field(fieldname) {
-		if(Array.isArray(fieldname)){
-			fieldname.forEach(field => {
-				this.hide_field(field);
-			});
-		}else{
-			this.set_field_display(fieldname, true);
-		}
-	}
+    return this;
+  }
 
-	super_container_field(fieldname) {
-		return $(this.get_field(fieldname).$wrapper.parent()[0]).parent()[0]
-	}
+  background_reload() {
+    this.get_doc(true).then((doc) => {
+      this.doc = JSON.parse(JSON.stringify(doc));
+      this.refresh();
+    });
+  }
 
+  show() {
+    this.is_hide = false;
+    this._wrapper.show();
+    return this;
+  }
 
-	show_field(fieldname) {
-		if(Array.isArray(fieldname)){
-			fieldname.forEach(field => {
-				this.show_field(field);
-			});
-		}else{
-			this.set_field_display(fieldname, false);
-		}
-	}
+  hide() {
+    this.is_hide = true;
+    this._wrapper.hide();
+    return this;
+  }
 
-	set_field_display(fieldname, hide) {
-		const field = this.get_field(fieldname);
-		if (field) {
-			//field.df.hidden = hide;
-			//field.refresh();
-			field.$wrapper[hide ? 'hide' : 'show']();
-		}
-	}
+  hide_field(fieldname) {
+    if (Array.isArray(fieldname)) {
+      fieldname.forEach((field) => {
+        this.hide_field(field);
+      });
+    } else {
+      this.set_field_display(fieldname, true);
+    }
+  }
 
-	toggle() {
-		this.is_hide ? this.show() : this.hide();
-		return this;
-	}
+  super_container_field(fieldname) {
+    return $(this.get_field(fieldname).$wrapper.parent()[0]).parent()[0];
+  }
 
-	make_custom_buttons_wrapper() {
-		this.body.append(`
+  show_field(fieldname) {
+    if (Array.isArray(fieldname)) {
+      fieldname.forEach((field) => {
+        this.show_field(field);
+      });
+    } else {
+      this.set_field_display(fieldname, false);
+    }
+  }
+
+  set_field_display(fieldname, hide) {
+    const field = this.get_field(fieldname);
+    if (field) {
+      //field.df.hidden = hide;
+      //field.refresh();
+      field.$wrapper[hide ? 'hide' : 'show']();
+    }
+  }
+
+  toggle() {
+    this.is_hide ? this.show() : this.hide();
+    return this;
+  }
+
+  make_custom_buttons_wrapper() {
+    this.body.append(`
             <div class='widget-group custom-widget'>
                 <div class=" widget-group-body grid-col-2"></div>
             </div>
-        `)
-	}
+        `);
+  }
 
-	add_action({ name, label, confirm = false, classes="", style="", type="default", icon="" } = {}, action) {
-		this.actions ??= {};
+  add_action(
+    { name, label, confirm = false, classes = '', style = '', type = 'default', icon = '', form_name = '' } = {},
+    action
+  ) {
+    this.actions ??= {};
 
-		const wrapper = this.body.find(".custom-widget");
+    console.log('form_name', form_name);
 
-		wrapper.find(".widget-group-body").append(`
+    const wrapper = this.body.find('.custom-widget');
+
+    if (form_name == 'complete_order') {
+      wrapper.find('.widget-group-body').append(`
             <a
-                class="widget widget-shadow shortcut-widget-box ${classes} bg-${type}"
+                class="btn ${classes}"
                 style="align-items:center;${style};"
                 data-widget-name="${name}"
             >
-                ${this.#action_content("", label, icon)}
+                ${this.#action_content('', label, icon)}
             </a>
         `);
+    } else {
+      wrapper.find('.widget-group-body').append(`
+        <a
+            class="widget widget-shadow shortcut-widget-box ${classes} bg-${type}"
+            style="align-items:center;${style};"
+            data-widget-name="${name}"
+        >
+            ${this.#action_content('', label, icon)}
+        </a>
+    `);
+    }
 
-		this.actions[name] = frappe.jshtml({
-			from_html: wrapper.find(`[data-widget-name="${name}"]`).get(0),
-			content: this.#action_content("", "{{text}}", icon),
-			text: `${__(label)}`
-		}).on("click", () => {
-			action && action();
-		}, confirm ? DOUBLE_CLICK : null);
-	}
+    this.actions[name] = frappe
+      .jshtml({
+        from_html: wrapper.find(`[data-widget-name="${name}"]`).get(0),
+        content: this.#action_content('', '{{text}}', icon),
+        text: `${__(label)}`,
+      })
+      .on(
+        'click',
+        () => {
+          action && action();
+        },
+        confirm ? DOUBLE_CLICK : null
+      );
+  }
 
-	#action_content(value, template = "", icon = "") {
-		return `
+  #action_content(value, template = '', icon = '') {
+    return `
         <div class="widget-head">
             <div>
                 <div class="widget-title ellipsis" style="font-size: 1.2em;">
-					<span class="${icon}" style="padding-right: 5px;"></span> ${template} ${value}
-				</div>
+          <span class="${icon}" style="padding-right: 5px;"></span> ${template} ${value}
+        </div>
                 <div class="widget-subtitle"></div>
                 <div class="widget-control"></div>
             </div>
-        </div>`
-	}
+        </div>`;
+  }
 }
