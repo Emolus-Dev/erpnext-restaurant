@@ -1,174 +1,198 @@
 class DeskModal {
-	constructor(options) {
-		Object.assign(this, options);
-		this.id = "desk-modal-" + Math.random().toString(36).substr(2, 15);
-		this.modal = null;
-		this.construct();
-	}
+  constructor(options) {
+    Object.assign(this, options);
+    this.id = 'desk-modal-' + Math.random().toString(36).substr(2, 15);
+    this.modal = null;
+    this.construct();
+  }
 
-	set_props(props){
-		Object.assign(this, props);
-	}
+  set_props(props) {
+    Object.assign(this, props);
+  }
 
-	remove(){
-		this.modal && this.modal.$wrapper.remove();
-	}
+  remove() {
+    this.modal && this.modal.$wrapper.remove();
+  }
 
-	construct(){
-		this.modal = new frappe.ui.Dialog({
-			title: this.title,
-			primary_action_label: __("Save")
-		});
+  construct() {
+    this.modal = new frappe.ui.Dialog({
+      title: this.title,
+      primary_action_label: __('Save'),
+    });
 
-		this.show();
-		
-		if(this.full_page){
-			this.modal.$wrapper.find('.modal-dialog').css({
-				"width": "100%", "height": "100%", "left": "0", "top": "0", "margin": "0", "padding":"0", "border-style": "none",
-				"max-width": "unset", "max-height": "unset"
-			});
+    this.show();
 
-			this.modal.$wrapper.find('.modal-content').css({
-				"width": "100%", "height": "100%", "left": "0", "top": "0", "border-style": "none", "border-radius": "0",
-				"max-width": "unset", "max-height": "unset"
-			});
-		}
+    if (this.full_page) {
+      this.modal.$wrapper.find('.modal-dialog').css({
+        width: '100%',
+        height: '100%',
+        left: '0',
+        top: '0',
+        margin: '0',
+        padding: '0',
+        'border-style': 'none',
+        'max-width': 'unset',
+        'max-height': 'unset',
+      });
 
-		setTimeout(() => {
-			this.render();
-		}, 200);
-	}
+      this.modal.$wrapper.find('.modal-content').css({
+        width: '100%',
+        height: '100%',
+        left: '0',
+        top: '0',
+        'border-style': 'none',
+        'border-radius': '0',
+        'max-width': 'unset',
+        'max-height': 'unset',
+      });
+    }
 
-	_adjust_height(){
-		return typeof this.adjust_height == "undefined" ? 0 : this.adjust_height;
-	}
+    setTimeout(() => {
+      this.render();
+    }, 200);
+  }
 
-	render(){
-		this.set_title();
+  _adjust_height() {
+    return typeof this.adjust_height == 'undefined' ? 0 : this.adjust_height;
+  }
 
-		if(typeof this.customize != "undefined"){
-			this.modal.$wrapper.find(".modal-body").empty();
+  render() {
+    this.set_title();
 
-			this.modal.$wrapper.css({
-				"height": `calc(100% - ${this._adjust_height()}px)`,
-				"border-bottom": "var(--default-line)",
-			});
+    if (typeof this.customize != 'undefined') {
+      this.modal.$wrapper.find('.modal-body').empty();
 
-			this.modal.$wrapper.find('.modal-header').css({
-				"padding": "5px",
-				"border-bottom": "var(--default-line)",
-				"border-radius": "0",
-				/*"min-height": "50px"*/
-			});
+      this.modal.$wrapper.css({
+        height: `calc(100% - ${this._adjust_height()}px)`,
+        'border-bottom': 'var(--default-line)',
+      });
 
-			this.modal.$wrapper.find('.modal-body').css({
-				"background-color": "transparent",
-				"padding": "0",
-				"border-style": "none",
-				"border-radius": "0",
-				"overflow-y": "auto"
-			});
+      this.modal.$wrapper.find('.modal-header').css({
+        padding: '5px',
+        'border-bottom': 'var(--default-line)',
+        'border-radius': '0',
+        /*"min-height": "50px"*/
+      });
 
-			this.modal.$wrapper.find('.modal-title').css({
-				"margin": "0"
-			});
+      this.modal.$wrapper.find('.modal-body').css({
+        'background-color': 'transparent',
+        padding: '0',
+        'border-style': 'none',
+        'border-radius': '0',
+        'overflow-y': 'auto',
+      });
 
-			this.modal.$wrapper.find(".modal-actions").prepend("<span class='btn-container'></span>").css({
-				"top": "5px"
-			});
-		}
+      this.modal.$wrapper.find('.modal-title').css({
+        margin: '0',
+      });
 
-		if(typeof this.from_server == "undefined") {
-			if(this.callback){
-				this.callback(this);
-			}
-		}else{
-			this.load_data();
-		}
-	}
+      this.modal.$wrapper.find('.modal-actions').prepend("<span class='btn-container'></span>").css({
+        top: '5px',
+      });
+    }
 
-	set_title(title){
-		this.modal.set_title(title);
-	}
+    if (typeof this.from_server == 'undefined') {
+      if (this.callback) {
+        this.callback(this);
+      }
+    } else {
+      this.load_data();
+    }
+  }
 
-	get container(){return this.modal.$wrapper.find(".modal-body")}
-	get title_container(){return this.modal.$wrapper.find(".modal-title")}
-	get buttons_container(){return this.modal.$wrapper.find(".modal-actions .btn-container")}
+  set_title(title) {
+    this.modal.set_title(title);
+  }
 
-	show(){
-		this.modal.show();
-	}
+  get container() {
+    return this.modal.$wrapper.find('.modal-body');
+  }
+  get title_container() {
+    return this.modal.$wrapper.find('.modal-title');
+  }
+  get buttons_container() {
+    return this.modal.$wrapper.find('.modal-actions .btn-container');
+  }
 
-	hide(){
-		this.modal.hide();
-	}
+  show() {
+    this.modal.show();
+  }
 
-	loading() {
-		this.modal.fields_dict.ht.$wrapper.html(
-			"<div class='loading-form' style='font-size: xx-large; text-align: center; color: #8D99A6'>" + __("Loading") + "...</div>"
-		);
-	}
+  hide() {
+    this.modal.hide();
+  }
 
-	stop_loading() {
-		//this.modal.fields_dict.ht.$wrapper.html("");
-	}
+  loading() {
+    this.modal.fields_dict.ht.$wrapper.html(
+      "<div class='loading-form' style='font-size: xx-large; text-align: center; color: #8D99A6'>" +
+        __('Loading') +
+        '...</div>'
+    );
+  }
 
-	get _is_pdf(){
-		return typeof this.is_pdf != "undefined" && this.is_pdf === true;
-	}
+  stop_loading() {
+    //this.modal.fields_dict.ht.$wrapper.html("");
+  }
 
-	get _args() {
-		let args = this.args;
-		return (typeof args == "undefined" || args == null ? {} : this.args);
-	}
+  get _is_pdf() {
+    return typeof this.is_pdf != 'undefined' && this.is_pdf === true;
+  }
 
-	get _pdf_url(){
-		let url = `/api/method/frappe.utils.print_format.download_pdf?doctype=${this.model}&name=${this.model_name}`;
-		let args = Object.assign({
-			no_letterhead: 1,
-			letterhead: 'No%20Letterhead',
-			settings: '%7B%7D'
-		}, this._args);
+  get _args() {
+    let args = this.args;
+    return typeof args == 'undefined' || args == null ? {} : this.args;
+  }
 
-		Object.keys(args).forEach(k => {
-			url += '&' + k + '=' + args[k];
-		});
+  get _pdf_url() {
+    let url = `/api/method/frappe.utils.print_format.download_pdf?doctype=${this.model}&name=${this.model_name}`;
+    let args = Object.assign(
+      {
+        no_letterhead: 1,
+        letterhead: 'No%20Letterhead',
+        settings: '%7B%7D',
+      },
+      this._args
+    );
 
-		return url;
-	}
+    Object.keys(args).forEach((k) => {
+      url += '&' + k + '=' + args[k];
+    });
 
-	get pdf_template(){
-		return `
+    return url;
+  }
+
+  get pdf_template() {
+    return `
  			<div class="col-md-12" style="margin-top: 15px">
  				<div class="pdf-container">
  					<embed src="${this._pdf_url}" frameborder="0" width="100%" height="400px">
  			 	</div>
  			 </div>
 		`;
-	}
+  }
 
-	load_data(){
-		if(this._is_pdf){
-			this.container.empty().append(this.pdf_template);
-		}else{
-			frappeHelper.api.call({
-				model: this.model,
-				name: this.model_name,
-				method: this.action,
-				args:{},
-				always: (r) => {
-					this.container.empty().append(r.message);
-					this.stop_loading();
-					if(this.callback){
-						this.callback(this);
-					}
-				},
-			});
-		}
+  load_data() {
+    if (this._is_pdf) {
+      this.container.empty().append(this.pdf_template);
+    } else {
+      frappeHelper.api.call({
+        model: this.model,
+        name: this.model_name,
+        method: this.action,
+        args: {},
+        always: (r) => {
+          this.container.empty().append(r.message);
+          this.stop_loading();
+          if (this.callback) {
+            this.callback(this);
+          }
+        },
+      });
     }
+  }
 
-    reload(){
-		this.load_data();
-		return this;
-	}
+  reload() {
+    this.load_data();
+    return this;
+  }
 }

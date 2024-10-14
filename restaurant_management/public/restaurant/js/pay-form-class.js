@@ -155,6 +155,7 @@ class PayForm extends DeskForm {
 
     this.get_field('notes').input.style.height = '80px';
     this.get_field('column').$wrapper.css('height', '37px');
+    // this.get_field('customer_group').$wrapper.show_field();
 
     this.hide_support_elements();
 

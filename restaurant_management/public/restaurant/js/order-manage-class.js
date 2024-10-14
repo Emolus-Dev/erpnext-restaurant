@@ -203,7 +203,7 @@ class OrderManage extends ObjectManage {
       } else {
         this.customer_editor = new DeskForm({
           form_name: `Table Customer`,
-          doc_name: this.table.data.name,
+          doc_name: `this.table.data.name ${xd}`,
           location: this.customer_wrapper.JQ(),
           on_save: () => {
             this.table.data.customer = this.customer_editor.doc.customer;
@@ -947,6 +947,7 @@ class OrderManage extends ObjectManage {
 
         this.#components.Divide.prop('disabled', this.current_order.items_count === 0);
         this.#components.customer.enable().show();
+        // this.#components.customer_group.enable().show();
         this.#components.dinners.enable().show();
         this.#components.Transfer.enable();
       } else {

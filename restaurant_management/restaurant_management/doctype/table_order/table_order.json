@@ -280,7 +280,6 @@
   },
   {
    "allow_in_quick_entry": 1,
-   "fetch_from": "customer.customer_group",
    "fieldname": "customer_group",
    "fieldtype": "Link",
    "label": "Customer Group",
@@ -290,7 +289,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-10-14 11:47:26.416993",
+ "modified": "2024-10-14 14:15:01.197166",
  "modified_by": "Administrator",
  "module": "Restaurant Management",
  "name": "Table Order",

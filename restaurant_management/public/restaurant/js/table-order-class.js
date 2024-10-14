@@ -8,7 +8,7 @@ class TableOrder {
     this.pay_form = null;
     this.current_item = null;
     this.button = null;
-    this.item_pending_to_send_status = ["Adding", null, undefined, ""];
+    this.item_pending_to_send_status = ['Adding', null, undefined, ''];
     this.make();
 
     RM.object(this.data.name, this);
@@ -29,7 +29,7 @@ class TableOrder {
     this.check_items({
       items: data.items,
       current: this.current_item,
-      action: action
+      action: action,
     });
 
     if (this.order_manage.is_same_order(this)) {
@@ -46,38 +46,42 @@ class TableOrder {
   make() {
     setTimeout(() => {
       if (this.button) this.button.remove();
-      let font_color = "";
+      let font_color = '';
 
-      if (!RM.check_permissions("order", this, "write")) {
+      if (!RM.check_permissions('order', this, 'write')) {
         font_color = `color: ${RM.restrictions.color};`;
       }
 
       this.container = frappe.jshtml({
-        tag: "div",
-        properties: { style: "display: none;", class: `order-entry-container` },
-        wrapper: this.order_manage.order_entry_container
+        tag: 'div',
+        properties: { style: 'display: none;', class: `order-entry-container` },
+        wrapper: this.order_manage.order_entry_container,
       });
 
-      this.button = frappe.jshtml({
-        tag: "button",
-        properties: {
-          class: "btn btn-app btn-lg btn-order",
-          style: `${font_color}; background-color: var(--fill_color)`
-        },
-        content: this.content,
-        text: this.data.items_count,
-        wrapper: this.order_manage.order_container,
-      }).on("click", () => {
-        if (RM.busy_message()) {
-          return;
-        }
-        this.select();
-      });
+      this.button = frappe
+        .jshtml({
+          tag: 'button',
+          properties: {
+            class: 'btn btn-app btn-lg btn-order',
+            style: `${font_color}; background-color: var(--fill_color)`,
+          },
+          content: this.content,
+          text: this.data.items_count,
+          wrapper: this.order_manage.order_container,
+        })
+        .on('click', () => {
+          if (RM.busy_message()) {
+            return;
+          }
+          this.select();
+        });
     }, 0);
   }
 
   get content() {
-    const background_color = `background-color: ${RM.check_permissions("order", this, "write") ? '' : RM.restrictions.color};`;
+    const background_color = `background-color: ${
+      RM.check_permissions('order', this, 'write') ? '' : RM.restrictions.color
+    };`;
     return `<span class='badge badge-tag' style="${background_color}">{{text}}</span>${this.data.short_name}`;
   }
 
@@ -112,7 +116,7 @@ class TableOrder {
         }
         this.get_items();
       } else {
-        this.order_manage.order_status_message("from select order");
+        this.order_manage.order_status_message('from select order');
         this.order_manage.check_buttons_status();
       }
 
@@ -123,7 +127,7 @@ class TableOrder {
       if (RM.crm_customer) {
         this.pay();
       } else {
-        toggle && this.order_manage.toggle_main_section("items");
+        toggle && this.order_manage.toggle_main_section('items');
       }
 
       RM.crm_customer = null;
@@ -142,7 +146,7 @@ class TableOrder {
 
   has_queue_items() {
     let has = false;
-    this.in_items(item => {
+    this.in_items((item) => {
       if (this.item_pending_to_send_status.includes(item.data.status)) {
         has = true;
       }
@@ -153,11 +157,11 @@ class TableOrder {
   push_item(new_item) {
     if (!this.data.customer) {
       this.order_manage.components.customer.highlight();
-      frappe.throw(__("Please set a Customer"));
+      frappe.throw(__('Please set a Customer'));
     }
 
     let test_item = null;
-    this.in_items(item => {
+    this.in_items((item) => {
       if (item.data.item_code === new_item.item_code) {
         if (RM.allows_to_edit_item.includes(item.data.status)) {
           item.data.qty += new_item.qty;
@@ -166,7 +170,7 @@ class TableOrder {
           item.data.is_customizable = new_item.is_customizable;
           item.data.sub_items = new_item.sub_items;
           item.data.item_tax_rate = new_item.item_tax_rate;
-          item.data.status = "Pending";
+          item.data.status = 'Pending';
           item.calculate();
           test_item = item;
         }
@@ -185,7 +189,7 @@ class TableOrder {
     this.items[identifier] = new OrderItem({
       identifier: identifier,
       order: this,
-      data: Object.assign({ identifier: identifier }, item)
+      data: Object.assign({ identifier: identifier }, item),
     });
 
     return this.get_item(identifier);
@@ -204,7 +208,7 @@ class TableOrder {
       if (locale) {
         tax = 0;
         amount = 0;
-        this.in_items(item => {
+        this.in_items((item) => {
           tax += flt(item.data.tax_amount || 0);
           amount += flt(item.data.amount || 0);
         });
@@ -218,11 +222,11 @@ class TableOrder {
       this.data.tax = tax;
       this.data.amount = amount;
 
-      this.order_manage.components.Tax.val(`${__("Taxes & Charges")}: ${RM.format_currency(tax)}`);
-      this.order_manage.components.Total.val(`${__("Total")}: ${RM.format_currency(amount)}`);
+      this.order_manage.components.Tax.val(`${__('Taxes & Charges')}: ${RM.format_currency(tax)}`);
+      this.order_manage.components.Total.val(`${__('Total')}: ${RM.format_currency(amount)}`);
 
       if (this.pay_form) {
-        this.pay_form.set_value("amount", amount);
+        this.pay_form.set_value('amount', amount);
       }
     }
   }
@@ -236,7 +240,8 @@ class TableOrder {
       return acc;
     }, []);
 
-    let test_item = null, current_item = null;
+    let test_item = null,
+      current_item = null;
 
     items.forEach((item, index) => {
       test_item = this.get_item(item.identifier) || this.add_locale_item(item);
@@ -258,7 +263,7 @@ class TableOrder {
     if (current != null) current_item = this.get_item(current.data.identifier);
 
     if (this.order_manage.is_same_order(this)) {
-      this.order_manage.order_status_message("from check item");
+      this.order_manage.order_status_message('from check item');
       setTimeout(() => {
         this.order_manage.check_buttons_status();
 
@@ -276,11 +281,13 @@ class TableOrder {
   }
 
   debug_items(items) {
-    const test_items = items.map(item => item.identifier);
+    const test_items = items.map((item) => item.identifier);
 
-    Object.keys(this.items).filter(x => !test_items.includes(x)).forEach((r) => {
-      this.delete_item(r);
-    });
+    Object.keys(this.items)
+      .filter((x) => !test_items.includes(x))
+      .forEach((r) => {
+        this.delete_item(r);
+      });
   }
 
   get_item(identifier) {
@@ -299,8 +306,8 @@ class TableOrder {
     const order_entry_container = this.order_manage.order_entry_container;
 
     const container_height = order_entry_container.offsetHeight;
-    const row_height = (container_height / this.items_count);
-    const position_row = (this.find_item_position(this.current_item) * row_height);
+    const row_height = container_height / this.items_count;
+    const position_row = this.find_item_position(this.current_item) * row_height;
 
     const container = $(this.order_manage.container).find('.panel-order-items')[0];
     container.scrollTo({ top: position_row, behavior: 'smooth' });
@@ -311,14 +318,14 @@ class TableOrder {
   }
 
   get_items() {
-    RM.working(__("Loading items in") + ": " + this.data.name);
+    RM.working(__('Loading items in') + ': ' + this.data.name);
     frappeHelper.api.call({
-      model: "Table Order",
+      model: 'Table Order',
       name: this.data.name,
-      method: "get_items",
+      method: 'get_items',
       always: (r) => {
         RM.ready();
-        if (typeof r.message != "undefined") {
+        if (typeof r.message != 'undefined') {
           this.data = r.message.order.data;
           this.render();
           this.check_items({ items: r.message.items });
@@ -332,11 +339,11 @@ class TableOrder {
       return;
     }
 
-    RM.working("Deleting Order");
+    RM.working('Deleting Order');
     frappeHelper.api.call({
-      model: "Table Order",
+      model: 'Table Order',
       name: this.data.name,
-      method: "_delete",
+      method: '_delete',
       always: () => {
         RM.ready();
       },
@@ -351,9 +358,9 @@ class TableOrder {
   divide() {
     if (this.divide_account_modal == null) {
       this.divide_account_modal = new DeskModal({
-        model: "Table Order",
+        model: 'Table Order',
         model_name: this.data.name,
-        action: "divide_template",
+        action: 'divide_template',
         /*"full_page": true,*/
         from_server: true,
         customize: true,
@@ -361,7 +368,7 @@ class TableOrder {
         set_buttons: true,
         callback: () => {
           this.make_divide_account();
-        }
+        },
       });
     } else {
       this.divide_account_modal.set_buttons = false;
@@ -373,7 +380,7 @@ class TableOrder {
   }
 
   transfer() {
-    RM.working("Transferring Order");
+    RM.working('Transferring Order');
     RM.transfer_order = this;
     this.order_manage.close();
   }
@@ -381,7 +388,7 @@ class TableOrder {
   make_divide_account() {
     if (this.divide_account_modal.set_buttons) {
       RMHelper.return_main_button(
-        `${this.data.name} (${__("Divide Account")})`,
+        `${this.data.name} (${__('Divide Account')})`,
         () => this.divide_account_modal.hide(),
         this.divide_account_modal.title_container
       );
@@ -407,7 +414,7 @@ class TableOrder {
 
       Object.keys(adds).forEach((key) => {
         let add = adds[key];
-        add.addEventListener("click", (event) => {
+        add.addEventListener('click', (event) => {
           event.preventDefault();
           event.stopPropagation();
 
@@ -415,14 +422,11 @@ class TableOrder {
             item.in_current_order--;
             item.in_new_order++;
 
-            this.set_values_in_divide_modal(
-              item_base_name,
-              {
-                "from_qty": item.in_current_order,
-                "to_qty": item.in_new_order,
-                "rate": item.data.rate,
-              }
-            );
+            this.set_values_in_divide_modal(item_base_name, {
+              from_qty: item.in_current_order,
+              to_qty: item.in_new_order,
+              rate: item.data.rate,
+            });
           }
         });
       });
@@ -431,21 +435,18 @@ class TableOrder {
 
       Object.keys(all_minus).forEach((key) => {
         const minus = all_minus[key];
-        minus.addEventListener("click", (event) => {
+        minus.addEventListener('click', (event) => {
           event.preventDefault();
           event.stopPropagation();
           if (item.in_new_order > 0) {
             item.in_current_order++;
             item.in_new_order--;
 
-            this.set_values_in_divide_modal(
-              item_base_name,
-              {
-                "from_qty": item.in_current_order,
-                "to_qty": item.in_new_order,
-                "rate": item.data.rate,
-              }
-            );
+            this.set_values_in_divide_modal(item_base_name, {
+              from_qty: item.in_current_order,
+              to_qty: item.in_new_order,
+              rate: item.data.rate,
+            });
           }
         });
       });
@@ -456,31 +457,28 @@ class TableOrder {
     $(`.${base_name}-from-qty`).empty().append(data.from_qty);
     $(`.${base_name}-to-qty`).empty().append(data.to_qty);
 
-    $(`.${base_name}-from-total`).empty().append(
-      RM.format_currency(parseFloat(data.from_qty) * parseFloat(data.rate))
-    );
-    $(`.${base_name}-to-total`).empty().append(
-      RM.format_currency(parseFloat(data.to_qty) * parseFloat(data.rate))
-    );
+    $(`.${base_name}-from-total`)
+      .empty()
+      .append(RM.format_currency(parseFloat(data.from_qty) * parseFloat(data.rate)));
+    $(`.${base_name}-to-total`)
+      .empty()
+      .append(RM.format_currency(parseFloat(data.to_qty) * parseFloat(data.rate)));
 
     this.aggregate_in_divide_modal();
   }
 
   aggregate_in_divide_modal() {
-    let total_left = 0, total_right = 0;
+    let total_left = 0,
+      total_right = 0;
     Object.keys(this.items).forEach((index) => {
       let item = this.items[index];
 
-      total_left += (item.in_current_order * item.data.rate);
-      total_right += (item.in_new_order * item.data.rate);
+      total_left += item.in_current_order * item.data.rate;
+      total_right += item.in_new_order * item.data.rate;
 
-      $(`.${this.data.table}_${this.data.name}-grand-total-left`).empty().append(
-        RM.format_currency(total_left)
-      );
+      $(`.${this.data.table}_${this.data.name}-grand-total-left`).empty().append(RM.format_currency(total_left));
 
-      $(`.${this.data.table}_${this.data.name}-grand-total-right`).empty().append(
-        RM.format_currency(total_right)
-      );
+      $(`.${this.data.table}_${this.data.name}-grand-total-right`).empty().append(RM.format_currency(total_right));
     });
   }
 
@@ -494,29 +492,29 @@ class TableOrder {
 
       if (item.in_new_order > 0) {
         update_data[item.data.identifier] = {
-          'name': item.data.entry_name,
-          'qty': item.in_new_order,
-          'identifier': "entry_" + RM.uuid()
+          name: item.data.entry_name,
+          qty: item.in_new_order,
+          identifier: 'entry_' + RM.uuid(),
         };
       }
     });
 
     if (Object.keys(update_data).length) {
-      RM.working("Dividing Account");
+      RM.working('Dividing Account');
       frappeHelper.api.call({
-        model: "Table Order",
+        model: 'Table Order',
         name: this.data.name,
-        method: "divide",
-        args: { "items": update_data, client: RM.client },
+        method: 'divide',
+        args: { items: update_data, client: RM.client },
         always: (r) => {
           RM.ready();
-          if (typeof r.message != "undefined") {
+          if (typeof r.message != 'undefined') {
             this.divide_account_modal.hide();
           }
-        }
+        },
       });
     } else {
-      frappe.msgprint(__('You have not selected products'))
+      frappe.msgprint(__('You have not selected products'));
     }
   }
 
@@ -525,15 +523,15 @@ class TableOrder {
       return;
     }
 
-    RM.working("Send order to Prepare");
+    RM.working('Send order to Prepare');
 
     frappeHelper.api.call({
-      model: "Table Order",
+      model: 'Table Order',
       name: this.data.name,
-      method: "send",
+      method: 'send',
       always: (r) => {
-        this.order_manage.components.Order.remove_class("btn-warning");
-        RM.ready(false, "success");
+        this.order_manage.components.Order.remove_class('btn-warning');
+        RM.ready(false, 'success');
         this.data = r.message.order.data;
         this.render();
         this.check_items({ items: r.message.items });
@@ -568,7 +566,7 @@ class TableOrder {
     if (RM.pos_profile == null) {
       frappe.msgprint(RM.not_has_pos_profile_message());
     } else if (RM.pos_profile.payments.length === 0) {
-      frappe.msgprint(__("There are no configured payment methods"));
+      frappe.msgprint(__('There are no configured payment methods'));
     } else {
       this.validate_items();
 
@@ -589,23 +587,23 @@ class TableOrder {
   }
 
   print_account() {
-    const title = this.data.name + " (" + __("Account") + ")";
+    const title = this.data.name + ' (' + __('Account') + ')';
     const order_manage = this.order_manage;
     const props = {
-      model: "Table Order",
+      model: 'Table Order',
       model_name: this.data.name,
       from_server: true,
       args: {
-        format: "Order Account",
+        format: 'Order Account',
         _lang: RM.lang,
         no_letterhead: RM.pos_profile.letter_head ? RM.pos_profile.letter_head : 1,
-        letterhead: RM.pos_profile.letter_head ? RM.pos_profile.letter_head : 'No%20Letterhead'
+        letterhead: RM.pos_profile.letter_head ? RM.pos_profile.letter_head : 'No%20Letterhead',
       },
       set_buttons: true,
       is_pdf: true,
       customize: true,
-      title: title
-    }
+      title: title,
+    };
 
     if (order_manage.print_modal) {
       order_manage.print_modal.set_props(props);
@@ -617,20 +615,20 @@ class TableOrder {
   }
 
   set_customer() {
-    this.edit("customer");
+    this.edit('customer');
   }
 
   set_dinners() {
-    this.edit("dinners");
+    this.edit('dinners');
   }
 
   edit(type) {
-    const form = type + "_form";
+    const form = type + '_form';
     if (this[form]) {
       this[form].reload();
       this[form].show();
     } else {
-      if (type === "customer"/* && RM.crm_customer*/) {
+      if (type === 'customer' /* && RM.crm_customer*/) {
         if (this.customer_editor == null) {
           this.customer_editor = new CustomerEditor({
             order: this,
@@ -644,7 +642,7 @@ class TableOrder {
         this[form] = new DeskForm({
           form_name: `restaurant-order-${type}`,
           doc_name: this.data.name,
-          callback: self => {
+          callback: (self) => {
             self.hide();
 
             RM.sound_submit();
@@ -652,10 +650,10 @@ class TableOrder {
             this.make_invoice();
           },
           title: __(`Set ${type}`),
-          after_load: self => {
+          after_load: (self) => {
             const input = self.get_field(type);
             input.set_focus();
-          }
+          },
         });
       }
     }
@@ -688,34 +686,34 @@ class TableOrder {
   }
 
   get_delivery_address() {
-    const address = this.data.address
+    const address = this.data.address;
 
-    return new Promise(resolve => {
+    return new Promise((resolve) => {
       if (address.length === 0) {
         resolve({});
       }
 
       frappeHelper.api.call({
-        model: "Table Order",
+        model: 'Table Order',
         name: this.data.name,
-        method: "get_delivery_address",
+        method: 'get_delivery_address',
         args: { address },
         always: (r) => {
           if (r.message) {
-            resolve(r.message)
+            resolve(r.message);
           }
-        }
+        },
       });
     });
   }
 }
 
 class CustomerEditor extends DeskForm {
-  form_name = "Restaurant Order Customer";
+  form_name = 'Restaurant Order Customer';
   constructor(props) {
     super(props);
     this.doc_name = this.order.data.name;
-    this.title = __("Set Customer");
+    this.title = __('Set Customer');
 
     super.initialize();
   }
@@ -725,50 +723,50 @@ class CustomerEditor extends DeskForm {
       success: () => {
         this.hide();
         if (this.order.pay_form) {
-          this.order.order_manage.toggle_main_section("pay");
-          this.order.pay_form.set_value("customer", this.get_value("customer"));
+          this.order.order_manage.toggle_main_section('pay');
+          this.order.pay_form.set_value('customer', this.get_value('customer'));
         } else {
           this.order.pay();
         }
-      }
+      },
     });
   }
 
   async make() {
     await super.make();
 
-    this.on(["address"], "change", (field) => {
+    this.on(['address'], 'change', (field) => {
       this.get_delivery_address();
     });
 
-    this.on("customer", "change", (field) => {
-      this.set_field_property("address", "get_query", () => {
+    this.on('customer', 'change', (field) => {
+      this.set_field_property('address', 'get_query', () => {
         return {
           filters: {
-            'link_doctype': 'Customer',
-            'link_name': field.get_value(),
-          }
-        }
+            link_doctype: 'Customer',
+            link_name: field.get_value(),
+          },
+        };
       });
     });
 
-    this.on("customer_primary_address", "change", (field) => {
-      this.set_value("address", field.get_value());
+    this.on('customer_primary_address', 'change', (field) => {
+      this.set_value('address', field.get_value());
     });
 
-    this.get_field("customer_primary_address").$wrapper.hide();
+    this.get_field('customer_primary_address').$wrapper.hide();
 
-    this.hide_field(["address", "delivery_address"]);
+    this.hide_field(['address', 'delivery_address']);
 
     setTimeout(() => {
-      this.trigger(["customer_primary_address"], "change");
+      this.trigger(['customer_primary_address'], 'change');
     }, 0);
   }
 
   async get_delivery_address() {
-    this.order.data.address = this.get_value("address");
+    this.order.data.address = this.get_value('address');
     const address = await this.order.get_delivery_address();
 
-    this.set_value("delivery_address", address.address || "");
+    this.set_value('delivery_address', address.address || '');
   }
 }

@@ -5,7 +5,11 @@
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
-  "column_break_newa",
+  "menu_name",
+  "column_break_txng",
+  "item_group",
+  "get_items",
+  "section_break_ogtw",
   "menu_items"
  ],
  "fields": [
@@ -16,13 +20,35 @@
    "options": "Restaurant Menu Item"
   },
   {
-   "fieldname": "column_break_newa",
+   "fieldname": "menu_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Menu Name"
+  },
+  {
+   "fieldname": "section_break_ogtw",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "get_items",
+   "fieldtype": "Button",
+   "label": "Get Items"
+  },
+  {
+   "fieldname": "column_break_txng",
    "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "item_group",
+   "fieldtype": "Link",
+   "label": "Item Group",
+   "options": "Item Group"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-04-19 16:58:42.785150",
+ "modified": "2024-10-14 14:45:35.254043",
  "modified_by": "Administrator",
  "module": "Restaurant Management",
  "name": "Restaurant Menu",
@@ -41,7 +67,9 @@
    "write": 1
   }
  ],
+ "show_title_field_in_link": 1,
  "sort_field": "modified",
  "sort_order": "DESC",
- "states": []
+ "states": [],
+ "title_field": "menu_name"
 }
