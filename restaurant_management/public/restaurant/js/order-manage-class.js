@@ -992,7 +992,7 @@ class OrderManage extends ObjectManage {
 
     objects.Minus.prop('disabled', !item_is_enabled_to_edit);
     objects.Plus.prop('disabled', !item_is_enabled_to_edit);
-    objects.Trash.prop('disabled', !item.is_enabled_to_delete);
+    objects.Trash.prop('disabled', !item.is_enabled_to_delete || !item_is_enabled_to_edit);
 
     item.check_status();
   }
@@ -1021,6 +1021,7 @@ class OrderManage extends ObjectManage {
         if (typeof r.message != 'undefined') {
           RM.sound_submit();
           //RM.is_mobile && this.select_last_order();
+          this.select_last_order();
         }
       },
     });
