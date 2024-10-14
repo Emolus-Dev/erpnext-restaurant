@@ -247,8 +247,6 @@ class DeskForm extends FrappeForm {
   ) {
     this.actions ??= {};
 
-    console.log('form_name', form_name);
-
     const wrapper = this.body.find('.custom-widget');
 
     if (form_name == 'complete_order') {

@@ -174,11 +174,19 @@ class PayForm extends DeskForm {
   make_actions() {
     [
       { name: 'save', label: __('Save'), type: 'success', form_name: 'complete_order', classes: 'btn-primary' },
+      // {
+      //   name: 'send_order',
+      //   label: __('Order'),
+      //   type: 'success',
+      //   icon: 'fa fa-cutlery',
+      //   form_name: 'complete_order',
+      //   classes: 'btn-primary',
+      // },
       {
-        name: 'send_order',
-        label: __('Order'),
+        name: 'print_pre_order',
+        label: __('Imprimir pre cuenta'),
         type: 'success',
-        icon: 'fa fa-cutlery',
+        icon: 'fa fa-print',
         form_name: 'complete_order',
         classes: 'btn-primary',
       },
@@ -225,6 +233,14 @@ class PayForm extends DeskForm {
         frappe.db.set_value('Table Order', this.order.data.name, 'status', 'Sent');
       }
     );
+  }
+
+  print_pre_order() {
+    frappe.confirm(__('Print Pre Order'), () => {
+      // frappe.db.set_value('Table Order', this.order.data.name, 'status', 'Sent');
+      // TODO: Print Pre Order
+      frappe.msgprint(__('TODO: Print Pre Order'));
+    });
   }
 
   cancel() {

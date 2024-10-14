@@ -9,6 +9,7 @@
   "table",
   "room",
   "customer",
+  "customer_group",
   "status",
   "is_delivery",
   "show_in_pos",
@@ -276,12 +277,20 @@
    "fieldname": "ordered_time",
    "fieldtype": "Datetime",
    "label": "Ordered Tyme"
+  },
+  {
+   "allow_in_quick_entry": 1,
+   "fetch_from": "customer.customer_group",
+   "fieldname": "customer_group",
+   "fieldtype": "Link",
+   "label": "Customer Group",
+   "options": "Customer Group"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-04-15 18:11:35.668706",
+ "modified": "2024-10-14 11:47:26.416993",
  "modified_by": "Administrator",
  "module": "Restaurant Management",
  "name": "Table Order",
