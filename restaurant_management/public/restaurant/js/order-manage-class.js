@@ -773,7 +773,7 @@ class OrderManage extends ObjectManage {
         [
           {
             name: 'Tax',
-            props: { class: 'pad-label lg', style: 'padding-top: 3px;' },
+            props: { class: 'pad-label lg', style: 'padding-top: 3px; display: none;' },
             action: 'none',
           },
           {

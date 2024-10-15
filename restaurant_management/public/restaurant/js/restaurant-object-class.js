@@ -20,7 +20,7 @@ RestaurantObject = class RestaurantObject {
 
   init_synchronize() {
     frappe.realtime.on(this.data.name, (data) => {
-      if (data.action === "Notifications") {
+      if (data.action === 'Notifications') {
         this.update_notifications(data);
       } else {
         if (this.room.data.name === RM.current_room.data.name) {
@@ -79,9 +79,9 @@ RestaurantObject = class RestaurantObject {
     if (window.saving) return;
 
     frappeHelper.api.call({
-      model: "Restaurant Object",
+      model: 'Restaurant Object',
       name: this.data.name,
-      method: "set_style",
+      method: 'set_style',
       args: { data: shape ? this.data.shape : JSON.stringify(this.data_style), shape: shape },
       always: () => {
         window.saving = false;
@@ -107,10 +107,12 @@ RestaurantObject = class RestaurantObject {
   }
 
   get size() {
-    return this.css_style == null ? { width: 0, height: 0 } : {
-      height: parseFloat(this.css_style.height),
-      width: parseFloat(this.css_style.width)
-    };
+    return this.css_style == null
+      ? { width: 0, height: 0 }
+      : {
+          height: parseFloat(this.css_style.height),
+          width: parseFloat(this.css_style.width),
+        };
   }
 
   get absolute_width() {
@@ -123,7 +125,7 @@ RestaurantObject = class RestaurantObject {
 
   unselect(force = false) {
     if ((!this.drag || force) && this.css_style != null) {
-      this.obj.remove_class("selected");
+      this.obj.remove_class('selected');
     }
     setTimeout(() => {
       this.drag = false;
@@ -151,14 +153,13 @@ RestaurantObject = class RestaurantObject {
           this.data_style[this.data_style_keys[k]] = data[this.data_style_keys[k]];
         }
       }
-    }
+    };
 
     if (data != null) {
       try {
         origin_data_style = JSON.parse(data) == null ? {} : JSON.parse(data);
-      } catch (e) { }
+      } catch (e) {}
       update_data_style(origin_data_style);
-
     } else if (x != null && y != null) {
       this.data_style.x = x;
       this.data_style.y = y;
@@ -177,16 +178,16 @@ RestaurantObject = class RestaurantObject {
   get style_structure() {
     const fix_prop = (k) => {
       const val = this.data_style[k];
-      const fix = ['height', 'width'].includes(k) ? 100 : 0
-      return (typeof val == "undefined" || val == null || val < 0) ? fix : val;
-    }
-    let styleText = "";
+      const fix = ['height', 'width'].includes(k) ? 100 : 0;
+      return typeof val == 'undefined' || val == null || val < 0 ? fix : val;
+    };
+    let styleText = '';
 
     this.data_style_keys.forEach((prop) => {
       this.data_style[prop] = fix_prop(prop);
       if (prop !== 'x' && prop !== 'y') {
         const prop_value = this.data_style[prop];
-        styleText += prop !== 'transform' ? (typeof prop_value != "undefined" ? `${prop}:${prop_value};` : '') : '';
+        styleText += prop !== 'transform' ? (typeof prop_value != 'undefined' ? `${prop}:${prop_value};` : '') : '';
       }
     });
 
@@ -196,20 +197,22 @@ RestaurantObject = class RestaurantObject {
   render() {
     this.set_data_style(null, null, this.data.data_style);
     const class_type = this.data.type === 'Table' ? '' : 'p-center';
-    const class_shape = this.data.shape === 'Round' && this.data.type === "Table" ? 'round-type' : '';
+    const class_shape = this.data.shape === 'Round' && this.data.type === 'Table' ? 'round-type' : '';
 
-    this.obj = frappe.jshtml({
-      caller: this,
-      touched: false,
-      tag: "div",
-      properties: {
-        class: `d-table ${class_type} ${class_shape}`,
-        style: this.style_structure
-      },
-      content: this.template,
-    }).on("click", () => {
-      this.select();
-    });
+    this.obj = frappe
+      .jshtml({
+        caller: this,
+        touched: false,
+        tag: 'div',
+        properties: {
+          class: `d-table ${class_type} ${class_shape}`,
+          style: this.style_structure,
+        },
+        content: this.template,
+      })
+      .on('click', () => {
+        this.select();
+      });
 
     this.room.tables_container.append(this.obj.html());
 
@@ -225,115 +228,127 @@ RestaurantObject = class RestaurantObject {
     const initDrag = () => {
       if (!this.is_selected) return;
       self.drag = true;
-      self.obj.add_class("drag");
-    }
+      self.obj.add_class('drag');
+    };
 
     const endDrag = () => {
       self.save_config();
-      self.obj.remove_class("drag");
-    }
+      self.obj.remove_class('drag');
+    };
 
-    interact(this.obj.obj).resizable({
-      edges: {
-        left: ['.nw', '.sw', '.w'],
-        top: ['.nw', '.ne', '.n'],
-        bottom: ['.sw', '.se', '.s'],
-        right: ['.se', '.ne', '.e'],
-      },
-      listeners: {
-        start() {
-          initDrag()
+    interact(this.obj.obj)
+      .resizable({
+        edges: {
+          left: ['.nw', '.sw', '.w'],
+          top: ['.nw', '.ne', '.n'],
+          bottom: ['.sw', '.se', '.s'],
+          right: ['.se', '.ne', '.e'],
         },
-        move: (e) => drag.resize(e, self),
-        end() {
-          endDrag()
-        }
-      },
-      modifiers: [
-        interact.modifiers.restrictSize({
-          min: { width: this.data.min_size, height: this.data.min_size }
-        })
-      ]
-    }).draggable({
-      listeners: {
-        start() {
-          initDrag()
+        listeners: {
+          start() {
+            initDrag();
+          },
+          move: (e) => drag.resize(e, self),
+          end() {
+            endDrag();
+          },
         },
-        move: (e) => drag.move(e, self),
-        end() {
-          endDrag()
-        }
-      },
-      inertia: true,
-      autoScroll: true,
-      modifiers: [
-        interact.modifiers.restrictRect({
-          restriction: 'parent',
-          endOnly: true
-        })
-      ]
-    });
+        modifiers: [
+          interact.modifiers.restrictSize({
+            min: { width: this.data.min_size, height: this.data.min_size },
+          }),
+        ],
+      })
+      .draggable({
+        listeners: {
+          start() {
+            initDrag();
+          },
+          move: (e) => drag.move(e, self),
+          end() {
+            endDrag();
+          },
+        },
+        inertia: true,
+        autoScroll: true,
+        modifiers: [
+          interact.modifiers.restrictRect({
+            restriction: 'parent',
+            endOnly: true,
+          }),
+        ],
+      });
   }
 
   get template() {
-    const block_style = !RM.can_open_order_manage(this) && this.data.type === "Table" ? RM.restrictions.color : "";
-    const hide_class = this.data.orders_count <= 0 ? " hide" : "";
+    const block_style = !RM.can_open_order_manage(this) && this.data.type === 'Table' ? RM.restrictions.color : '';
+    const hide_class = this.data.orders_count <= 0 ? ' hide' : '';
 
     this.indicator = frappe.jshtml({
-      tag: "span",
+      tag: 'span',
       properties: {
         class: `order-count ${hide_class}`,
-        style: `background-color: ${block_style}`
+        style: `background-color: ${block_style}`,
       },
       content: `<span class="fa fa-cutlery" style="font-size: 12px"></span> {{text}}`,
-      text: this.data.orders_count
+      text: this.data.orders_count,
     });
 
     this.has_customer = frappe.jshtml({
-      tag: "span",
+      tag: 'span',
       properties: {
-        class: `has-customer ${(this.hasCustomer() || this.data.status === "Reserved") ? "" : "hide"}`,
-        style: `background-color: ${block_style}`
+        class: `has-customer ${this.hasCustomer() || this.data.status === 'Reserved' ? '' : 'hide'}`,
+        style: `background-color: ${block_style}`,
       },
-      content: `<span class="fa fa-user has-customer-icon"></span>`// style="float:right; font-size: 20px; /*margin-right:6px; margin-top:3px*/"></span>`,
+      content: `<span class="fa fa-user has-customer-icon"></span>`, // style="float:right; font-size: 20px; /*margin-right:6px; margin-top:3px*/"></span>`,
     });
 
-    this.edit_button = frappe.jshtml({
-      tag: "button",
-      properties: { class: "btn d-table-btn btn-default btn-flat btn-sm" },
-      content: '<span class="fa fa-trash"></span>'
-    }).on("click", () => {
-      this.delete();
-    }, DOUBLE_CLICK);
+    this.edit_button = frappe
+      .jshtml({
+        tag: 'button',
+        properties: { class: 'btn d-table-btn btn-default btn-flat btn-sm' },
+        content: '<span class="fa fa-trash"></span>',
+      })
+      .on(
+        'click',
+        () => {
+          this.delete();
+        },
+        DOUBLE_CLICK
+      );
 
-    this.delete_button = frappe.jshtml({
-      tag: "button",
-      properties: { class: "btn d-table-btn btn-default btn-flat btn-sm" },
-      content: '<span class="fa fa-gear"></span>'
-    }).on("click", () => {
-      this.edit();
-    });
+    this.delete_button = frappe
+      .jshtml({
+        tag: 'button',
+        properties: { class: 'btn d-table-btn btn-default btn-flat btn-sm' },
+        content: '<span class="fa fa-gear"></span>',
+      })
+      .on('click', () => {
+        this.edit();
+      });
 
-    this.shape_type_button = frappe.jshtml({
-      tag: "button",
-      properties: { class: "btn d-table-btn btn-default btn-flat btn-sm shape-button" },
-      content: `<span class="fa fa-${this.data.shape === 'Round' ? 'square-o' : 'circle-o'}"></span>`,
-    }).on("click", () => {
-      if (this.data.type === "Table") this.toggle_shape();
-    });
+    this.shape_type_button = frappe
+      .jshtml({
+        tag: 'button',
+        properties: { class: 'btn d-table-btn btn-default btn-flat btn-sm shape-button' },
+        content: `<span class="fa fa-${this.data.shape === 'Round' ? 'square-o' : 'circle-o'}"></span>`,
+      })
+      .on('click', () => {
+        if (this.data.type === 'Table') this.toggle_shape();
+      });
 
     this.description = frappe.jshtml({
-      tag: "span",
-      properties: { class: "d-label" },
-      content: "{{text}}",
-      text: this.data.description
+      tag: 'span',
+      properties: { class: 'd-label' },
+      content: '{{text}}',
+      text: this.data.description,
     });
 
     this.no_of_seats = frappe.jshtml({
-      tag: "span",
-      properties: { class: "d-table-seats" },
+      tag: 'span',
+      properties: { class: 'd-table-seats' },
       content: `<span class="fa fa-user" style="font-size: 14px"></span> {{text}}`,
-      text: this.data.no_of_seats
+      text: this.data.no_of_seats,
     });
 
     return `
@@ -351,7 +366,7 @@ RestaurantObject = class RestaurantObject {
 				${this.shape_type_button.html()}
 			</div>
 		</div>
-		${this.no_of_seats.html()}`
+		${this.no_of_seats.html()}`;
   }
 
   select() {
@@ -373,9 +388,9 @@ RestaurantObject = class RestaurantObject {
       return;
     }
 
-    if (this.data.type === "Table") {
+    if (this.data.type === 'Table') {
       if (!RM.can_open_order_manage(this)) {
-        RM.notification("red", __("The table is assigned to another user, you can not open"));
+        RM.notification('red', __('The table is assigned to another user, you can not open'));
         return;
       }
 
@@ -383,14 +398,14 @@ RestaurantObject = class RestaurantObject {
         if (this.order_manage == null) {
           this.order_manage = new OrderManage({
             table: this,
-            identifier: RM.OMName(this.data.name)
+            identifier: RM.OMName(this.data.name),
           });
         } else {
           this.order_manage.show();
         }
 
         RM.object(this.order_manage.identifier, this.order_manage);
-      }
+      };
 
       const open = () => {
         RM.pos.check_opening_entry(RM.pos_profile.name).then(() => {
@@ -402,7 +417,7 @@ RestaurantObject = class RestaurantObject {
 
           if (this.hasCustomer()) {
             _open();
-            return
+            return;
           }
 
           setTimeout(() => {
@@ -410,13 +425,14 @@ RestaurantObject = class RestaurantObject {
               title: __('Table {0}', [this.data.description]),
               fields: [
                 {
-                  fieldtype: 'Column Break'
+                  fieldtype: 'Column Break',
                 },
                 {
-                  fieldtype: 'Link', label: __('Customer'),
-                  fieldname: "customer",
-                  options: "Customer",
-                  default: this.data?.customer,
+                  fieldtype: 'Link',
+                  label: __('Customer'),
+                  fieldname: 'customer',
+                  options: 'Customer',
+                  default: this.data?.customer || RM.pos_profile.customer,
                   //get_query: () => {
                   //    return {
                   //        filters: {
@@ -426,44 +442,52 @@ RestaurantObject = class RestaurantObject {
                   //}
                 },
                 {
-                  fieldtype: 'HTML', fieldname: "reservation"
+                  fieldtype: 'HTML',
+                  fieldname: 'reservation',
                 },
                 {
-                  fieldtype: 'Section Break'
+                  fieldtype: 'Section Break',
                 },
                 {
-                  fieldtype: 'Button', fieldname: "open_table", label: __('Open Table'), primary: 1,
+                  fieldtype: 'Button',
+                  fieldname: 'open_table',
+                  label: __('Open Table'),
+                  primary: 1,
                   click: () => {
-                    if (dialog.get_value("customer") === "") {
-                      frappe.msgprint(__("Please select a customer to open the table"));
+                    if (dialog.get_value('customer') === '') {
+                      frappe.msgprint(__('Please select a customer to open the table'));
                       return;
                     }
 
-                    frappe.db.set_value("Restaurant Object", this.data.name, "customer", dialog.get_value("customer")).then(() => {
-                      dialog.hide();
-                      _open();
-                    });
-                  }
-                }
-              ]
+                    frappe.db
+                      .set_value('Restaurant Object', this.data.name, 'customer', dialog.get_value('customer'))
+                      .then(() => {
+                        dialog.hide();
+                        _open();
+                      });
+                  },
+                },
+              ],
             });
 
-            Object.entries({ width: "100%", height: "50px", fontSize: "20px", fontWeight: "400" }).forEach(([key, value]) => {
-              dialog.get_field("open_table").input.style[key] = value;
-            });
+            Object.entries({ width: '100%', height: '50px', fontSize: '20px', fontWeight: '400' }).forEach(
+              ([key, value]) => {
+                dialog.get_field('open_table').input.style[key] = value;
+              }
+            );
 
             dialog.show();
 
-            Reservation.render(this.data.name, dialog.get_field("reservation").$wrapper);
-          }, 0)
+            Reservation.render(this.data.name, dialog.get_field('reservation').$wrapper);
+          }, 0);
         });
-      }
+      };
 
       if (RM.transfer_order && RM.transfer_order.order_manage.table_name !== this.data.name) {
         frappeHelper.api.call({
-          model: "Table Order",
+          model: 'Table Order',
           name: RM.transfer_order.data.name,
-          method: "transfer",
+          method: 'transfer',
           args: { table: this.data.name, client: RM.client },
           always: (r) => {
             if (r.message) {
@@ -474,26 +498,26 @@ RestaurantObject = class RestaurantObject {
             }
             RM.ready();
           },
-          freeze: true
+          freeze: true,
         });
       } else if (RM.reservation) {
-        RM.reservation.set_value("table", this.data.name);
+        RM.reservation.set_value('table', this.data.name);
 
         RM.reservation.save({
-          success: r => {
+          success: (r) => {
             if (r.message) {
               RM.reservation.show();
               RM.reservation = null;
 
-              RM.notification("green", __("Table {0} has been reserved", [this.data.description]));
+              RM.notification('green', __('Table {0} has been reserved', [this.data.description]));
             }
           },
-          error: r => {
+          error: (r) => {
             RM.reservation.show();
           },
-          always: r => {
+          always: (r) => {
             RM.ready();
-          }
+          },
         });
       } else {
         RM.transfer_order = null;
@@ -501,12 +525,11 @@ RestaurantObject = class RestaurantObject {
         RM.ready();
         open();
       }
-
-    } else if (this.data.type === "Production Center") {
+    } else if (this.data.type === 'Production Center') {
       if (RM.transfer_order != null) {
         frappe.confirm(
-          `${__("You are transferring an Order, choose a table")}<br><br>
-					<strong>${__("Do you want to cancel the transfer?")}</strong>`,
+          `${__('You are transferring an Order, choose a table')}<br><br>
+					<strong>${__('Do you want to cancel the transfer?')}</strong>`,
           () => {
             RM.transfer_order = null;
             RM.ready();
@@ -521,7 +544,7 @@ RestaurantObject = class RestaurantObject {
           this.process_manage = new ProcessManage({
             name: this.data.name,
             table: this,
-            identifier: RM.PMName(this.data.name)
+            identifier: RM.PMName(this.data.name),
           });
         } else {
           this.process_manage.show();
@@ -534,31 +557,31 @@ RestaurantObject = class RestaurantObject {
   }
 
   get is_selected() {
-    return this.obj && this.obj.has_class("selected");
+    return this.obj && this.obj.has_class('selected');
   }
 
   delete() {
-    RM.working("Deleting Object");
+    RM.working('Deleting Object');
     frappeHelper.api.call({
-      model: "Restaurant Object",
+      model: 'Restaurant Object',
       name: this.data.name,
-      method: "_delete",
+      method: '_delete',
       always: () => {
         RM.ready();
       },
-      freeze: true
+      freeze: true,
     });
   }
 
   edit() {
-    if (this.data.type === "Table") {
+    if (this.data.type === 'Table') {
       if (this.edit_form) {
         this.edit_form.show();
       } else {
         this.edit_form = new DeskForm({
-          doctype: "Restaurant Object",
+          doctype: 'Restaurant Object',
           doc_name: this.data.name,
-          form_name: this.data.type === "Table" ? "restaurant-table" : "restaurant-production-center",
+          form_name: this.data.type === 'Table' ? 'restaurant-table' : 'restaurant-production-center',
           callback: (self) => {
             self.hide();
           },
@@ -566,12 +589,12 @@ RestaurantObject = class RestaurantObject {
           field_properties: {
             type: { read_only: true },
             room: { read_only: true, hidden: true },
-          }
+          },
         });
       }
     }
 
-    if (this.data.type === "Production Center") {
+    if (this.data.type === 'Production Center') {
       if (this.ProductionCenterEditor) {
         this.ProductionCenterEditor.show();
         this.ProductionCenterEditor.reload(null, true);
@@ -580,54 +603,48 @@ RestaurantObject = class RestaurantObject {
           //doctype: "Restaurant Object",
           doc_name: this.data.name,
           title: __(`Update ${this.data.description}`),
-          form_name: "restaurant-production-center",
+          form_name: 'restaurant-production-center',
           callback: (self) => {
             self.hide();
           },
           field_properties: {
             type: { read_only: true },
             room: { read_only: true, hidden: true },
-            "restricted_rooms.origin": {
-              "get_query": () => {
+            'restricted_rooms.origin': {
+              get_query: () => {
                 return {
-                  filters: [
-                    ['type', '=', 'Room'],
-                  ]
-                }
-              }
+                  filters: [['type', '=', 'Room']],
+                };
+              },
             },
-            "restricted_tables.origin": {
-              "get_query": () => {
+            'restricted_tables.origin': {
+              get_query: () => {
                 return {
-                  filters: [
-                    ['type', '=', 'Table'],
-                  ]
-                }
-              }
-            }
-          }
+                  filters: [['type', '=', 'Table']],
+                };
+              },
+            },
+          },
         });
       }
     }
   }
 
-  hasCustomer(){
+  hasCustomer() {
     return this.data?.customer?.length > 0;
   }
 
   reset_data(data) {
     this.data = data;
-    this.obj.prop("style", this.style_structure);
-    this.obj.remove_class("round-type").add_class(this.is_table && this.is_round ? 'round-type' : '');
-    this.shape_type_button.val(
-      `<span class="fa fa-${this.data.shape === 'Round' ? 'square-o' : 'circle-o'}"></span>`
-    )
+    this.obj.prop('style', this.style_structure);
+    this.obj.remove_class('round-type').add_class(this.is_table && this.is_round ? 'round-type' : '');
+    this.shape_type_button.val(`<span class="fa fa-${this.data.shape === 'Round' ? 'square-o' : 'circle-o'}"></span>`);
     this.description.val(this.data.description);
     this.no_of_seats.val(this.data.no_of_seats);
-    if (this.hasCustomer() || this.data.status === "Reserved") {
-      this.has_customer.remove_class("hide");
+    if (this.hasCustomer() || this.data.status === 'Reserved') {
+      this.has_customer.remove_class('hide');
     } else {
-      this.has_customer.add_class("hide");
+      this.has_customer.add_class('hide');
     }
     //this.has_customer_display.val(this.data.has_customer_display);
   }
@@ -636,20 +653,23 @@ RestaurantObject = class RestaurantObject {
     this.indicator.val(this.data.orders_count);
 
     if (this.data.orders_count > 0) {
-      this.indicator.remove_class("hide");
+      this.indicator.remove_class('hide');
 
       if (this.is_table) {
-        this.indicator.css("background-color", RM.can_open_order_manage(this) ? '' : RM.restrictions.color);
+        this.indicator.css('background-color', RM.can_open_order_manage(this) ? '' : RM.restrictions.color);
       }
     } else {
-      this.indicator.add_class("hide");
+      this.indicator.add_class('hide');
     }
   }
 
-
-  get is_table() { return this.data.type === "Table" }
-  get is_round() { return this.data.shape === 'Round' }
-}
+  get is_table() {
+    return this.data.type === 'Table';
+  }
+  get is_round() {
+    return this.data.shape === 'Round';
+  }
+};
 
 class ProductionCenterEditor extends DeskForm {
   constructor(options) {
@@ -659,31 +679,34 @@ class ProductionCenterEditor extends DeskForm {
   async make() {
     await super.make();
 
-    this.on("restricted_to_branches", "change", (field) => {
+    this.on('restricted_to_branches', 'change', (field) => {
       const value = field.get_value();
-      this.get_field("restricted_branches_container").wrapper[0].style.display = (value === 1 ? "block" : "none");
+      this.get_field('restricted_branches_container').wrapper[0].style.display = value === 1 ? 'block' : 'none';
     });
 
-    this.on("restricted_to_parent_room", "change", (field) => {
+    this.on('restricted_to_parent_room', 'change', (field) => {
       const value = field.get_value();
-      this.get_field("restricted_rooms_container").wrapper[0].style.display = (value === 1 ? "none" : "block");
-      this.get_field("restricted_tables_container").wrapper[0].style.display = (value === 1 ? "none" : "block");
+      this.get_field('restricted_rooms_container').wrapper[0].style.display = value === 1 ? 'none' : 'block';
+      this.get_field('restricted_tables_container').wrapper[0].style.display = value === 1 ? 'none' : 'block';
     });
 
-    this.on("restricted_to_rooms", "change", (field) => {
+    this.on('restricted_to_rooms', 'change', (field) => {
       const value = field.get_value();
-      this.get_field("restricted_tables_container").wrapper[0].style.display = (value === 1 ? "none" : "block");
-      this.get_field("restricted_rooms").$wrapper[value === 1 ? "show" : "hide"]();
+      this.get_field('restricted_tables_container').wrapper[0].style.display = value === 1 ? 'none' : 'block';
+      this.get_field('restricted_rooms').$wrapper[value === 1 ? 'show' : 'hide']();
     });
 
-    this.on("restricted_to_tables", "change", (field) => {
-      this.get_field("restricted_tables").$wrapper[field.get_value() === 1 ? "show" : "hide"]();
+    this.on('restricted_to_tables', 'change', (field) => {
+      this.get_field('restricted_tables').$wrapper[field.get_value() === 1 ? 'show' : 'hide']();
     });
 
-    this.hide_field(["restricted_to_branches", "restricted_branches"]);
+    this.hide_field(['restricted_to_branches', 'restricted_branches']);
 
     setTimeout(() => {
-      this.trigger(["restricted_to_parent_room", "restricted_to_rooms", "restricted_to_tables", "restricted_to_branches"], "change");
+      this.trigger(
+        ['restricted_to_parent_room', 'restricted_to_rooms', 'restricted_to_tables', 'restricted_to_branches'],
+        'change'
+      );
     }, 0);
   }
 }

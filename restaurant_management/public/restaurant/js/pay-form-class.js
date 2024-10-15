@@ -45,6 +45,79 @@ class PayForm extends DeskForm {
 
     this.init_synchronize();
 
+    console.log('this.order.data', this.on);
+
+    this.on('customer_group', 'change', (field) => {
+      let customer_group_value = field.get_value();
+      this.order.data.customer_group = customer_group_value;
+
+      if (customer_group_value) {
+        frappe.call({
+          method: 'df_felapp.api_app.update_customer_group',
+          args: {
+            customer: this.get_value('customer'),
+            customer_group: customer_group_value,
+          },
+          freeze: true,
+          freeze_message: `<div class="spinner-border" role="status">
+            <span class="sr-only">${__('Validando Grupo...')}</span>
+          </div>`,
+          callback: ({ message }) => {
+            if (message) {
+              frappe.show_alert({
+                indicator: 'green',
+                message: __('Grupo actualizado'),
+              });
+            }
+          },
+          error: ({ message }) => {
+            frappe.show_alert({
+              indicator: 'red',
+              message: __('No se pudo validar el Grupo'),
+            });
+          },
+        });
+      }
+    });
+
+    setTimeout(() => {
+      this.on('tax_id', 'change', (field) => {
+        let customer_tax_id = field.get_value();
+
+        if (customer_tax_id) {
+          frappe.call({
+            method: 'df_felapp.api_app.process_customer_tax_id_restaurant',
+            args: {
+              tax_id: customer_tax_id,
+              customer_group: this.order.data.customer_group,
+            },
+            freeze: true,
+            freeze_message: `<div class="spinner-border" role="status">
+            <span class="sr-only">${__('Validando NIT...')}</span>
+          </div>`,
+            callback: ({ message }) => {
+              console.log('message', message);
+
+              this.set_value('customer', message.name);
+              this.order.data.customer = message.name;
+
+              this.set_value('tax_id', message.tax_id);
+              this.order.data.tax_id = message.tax_id;
+
+              this.set_value('customer_group', message.customer_group);
+              this.order.data.customer_group = message.customer_group;
+            },
+            error: ({ message }) => {
+              frappe.show_alert({
+                indicator: 'red',
+                message: __('No se pudo validar el NIT'),
+              });
+            },
+          });
+        }
+      });
+    }, 0);
+
     const set_address_query = () => {
       this.set_field_property('address', 'get_query', () => {
         return {
@@ -145,6 +218,10 @@ class PayForm extends DeskForm {
       this.order.data.customer = this.get_value('customer');
     });
 
+    this.on('customer_group', 'change', () => {
+      this.order.data.customer_group = this.get_value('customer_group');
+    });
+
     this.on('customer_primary_address', 'change', () => {
       set_related('customer_primary_address', 'address');
     });
@@ -155,7 +232,6 @@ class PayForm extends DeskForm {
 
     this.get_field('notes').input.style.height = '80px';
     this.get_field('column').$wrapper.css('height', '37px');
-    // this.get_field('customer_group').$wrapper.show_field();
 
     this.hide_support_elements();
 
@@ -240,7 +316,8 @@ class PayForm extends DeskForm {
     frappe.confirm(__('Print Pre Order'), () => {
       // frappe.db.set_value('Table Order', this.order.data.name, 'status', 'Sent');
 
-      this.send2bridgeRemote('Table Order', this.order.data.name, 'Factura La Rosa', 'Caja');
+      // this.send2bridgeRemote('Table Order', this.order.data.name, 'Factura La Rosa', 'Caja');
+      this.send2bridgeRemote('Table Order', this.order.data.name, RM.pos_profile.print_format, 'Caja');
     });
   }
 

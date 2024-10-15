@@ -586,6 +586,27 @@ class TableOrder {
     }
   }
 
+  send2bridgeRemoteTblOrder(doctype, name, print_format, print_type, pos_profile = '') {
+    frappe.call({
+      method: 'silent_print.utils.print_format.print_silently',
+      args: {
+        doctype: doctype,
+        name: name,
+        print_format: print_format,
+        print_type: print_type,
+      },
+      callback: function (r) {
+        if (r.message) {
+          // Si la llamada fue exitosa y devolvió un mensaje
+          frappe.show_alert({
+            indicator: 'green',
+            message: __('Printed successfully'),
+          });
+        }
+      },
+    });
+  }
+
   print_account() {
     const title = this.data.name + ' (' + __('Account') + ')';
     const order_manage = this.order_manage;
@@ -605,17 +626,28 @@ class TableOrder {
       title: title,
     };
 
-    if (order_manage.print_modal) {
-      order_manage.print_modal.set_props(props);
-      order_manage.print_modal.set_title(title);
-      order_manage.print_modal.reload().show();
-    } else {
-      order_manage.print_modal = new DeskModal(props);
-    }
+    this.send2bridgeRemoteTblOrder(
+      'Table Order',
+      this.data.name,
+      RM.pos_profile.custom_print_format_pre_cuenta,
+      'Caja'
+    );
+
+    // if (order_manage.print_modal) {
+    //   order_manage.print_modal.set_props(props);
+    //   order_manage.print_modal.set_title(title);
+    //   order_manage.print_modal.reload().show();
+    // } else {
+    //   order_manage.print_modal = new DeskModal(props);
+    // }
   }
 
   set_customer() {
     this.edit('customer');
+  }
+
+  set_customer_group() {
+    this.edit('customer_group');
   }
 
   set_dinners() {
@@ -626,6 +658,7 @@ class TableOrder {
     const form = type + '_form';
     if (this[form]) {
       this[form].reload();
+      this[form].reload();
       this[form].show();
     } else {
       if (type === 'customer' /* && RM.crm_customer*/) {
@@ -635,8 +668,15 @@ class TableOrder {
             //location: this.order_manage.invoice_wrapper.JQ()
           });
         } else {
-          this.customer_editor.reload();
-          this.customer_editor.show();
+          console.log('this.customer_editor', this.customer_editor);
+          this.customer_editor = new CustomerEditor({
+            order: this,
+            //location: this.order_manage.invoice_wrapper.JQ()
+          });
+
+          // this.customer_editor.reload();
+          // this.customer_editor.reload();
+          // this.customer_editor.show();
         }
       } else {
         this[form] = new DeskForm({
@@ -725,6 +765,8 @@ class CustomerEditor extends DeskForm {
         if (this.order.pay_form) {
           this.order.order_manage.toggle_main_section('pay');
           this.order.pay_form.set_value('customer', this.get_value('customer'));
+          this.order.pay_form.set_value('customer_group', this.get_value('customer_group'));
+          this.order.pay_form.set_value('tax_id', this.get_value('tax_id'));
         } else {
           this.order.pay();
         }
@@ -734,7 +776,7 @@ class CustomerEditor extends DeskForm {
 
   async make() {
     await super.make();
-
+    console.log('this.order.data make', this.order.data);
     this.on(['address'], 'change', (field) => {
       this.get_delivery_address();
     });
@@ -748,6 +790,70 @@ class CustomerEditor extends DeskForm {
           },
         };
       });
+    });
+
+    this.on('customer_group', 'change', (field) => {
+      let customer_group_value = field.get_value();
+
+      if (customer_group_value) {
+        frappe.call({
+          method: 'df_felapp.api_app.update_customer_group',
+          args: {
+            customer: this.get_value('customer'),
+            customer_group: customer_group_value,
+          },
+          freeze: true,
+          freeze_message: `<div class="spinner-border" role="status">
+            <span class="sr-only">${__('Validando Grupo...')}</span>
+          </div>`,
+          callback: ({ message }) => {
+            if (message) {
+              frappe.show_alert({
+                indicator: 'green',
+                message: __('Grupo actualizado'),
+              });
+            }
+          },
+          error: ({ message }) => {
+            frappe.show_alert({
+              indicator: 'red',
+              message: __('No se pudo validar el Grupo'),
+            });
+          },
+        });
+      }
+    });
+
+    this.on('tax_id', 'change', (field) => {
+      let customer_tax_id = field.get_value();
+
+      if (customer_tax_id) {
+        frappe.call({
+          method: 'df_felapp.api_app.process_customer_tax_id_restaurant',
+          args: {
+            tax_id: customer_tax_id,
+          },
+          freeze: true,
+          freeze_message: `<div class="spinner-border" role="status">
+            <span class="sr-only">${__('Validando NIT...')}</span>
+          </div>`,
+          callback: ({ message }) => {
+            console.log('message', message);
+
+            this.set_value('customer', message.name);
+
+            this.set_value('tax_id', message.tax_id);
+
+            this.set_value('customer_group', message.customer_group);
+          },
+          error: ({ message }) => {
+            frappe.show_alert({
+              indicator: 'red',
+              message: __('No se pudo validar el NIT'),
+            });
+          },
+        });
+      }
     });
 
     this.on('customer_primary_address', 'change', (field) => {
