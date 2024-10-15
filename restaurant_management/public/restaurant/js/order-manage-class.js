@@ -203,7 +203,7 @@ class OrderManage extends ObjectManage {
       } else {
         this.customer_editor = new DeskForm({
           form_name: `Table Customer`,
-          doc_name: `this.table.data.name ${xd}`,
+          doc_name: this.table.data.name,
           location: this.customer_wrapper.JQ(),
           on_save: () => {
             this.table.data.customer = this.customer_editor.doc.customer;

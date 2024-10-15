@@ -239,14 +239,35 @@ class PayForm extends DeskForm {
   print_pre_order() {
     frappe.confirm(__('Print Pre Order'), () => {
       // frappe.db.set_value('Table Order', this.order.data.name, 'status', 'Sent');
-      // TODO: Print Pre Order
-      frappe.msgprint(__('TODO: Print Pre Order'));
+
+      this.send2bridgeRemote('Table Order', this.order.data.name, 'Factura La Rosa', 'Caja');
     });
   }
 
   cancel() {
     frappe.confirm(__('Do you want to cancel Order?</strong>'), () => {
       frappe.db.set_value('Table Order', this.order.data.name, 'status', 'Cancelled');
+    });
+  }
+
+  send2bridgeRemote(doctype, name, print_format, print_type, pos_profile = '') {
+    frappe.call({
+      method: 'silent_print.utils.print_format.print_silently',
+      args: {
+        doctype: doctype,
+        name: name,
+        print_format: print_format,
+        print_type: print_type,
+      },
+      callback: function (r) {
+        if (r.message) {
+          // Si la llamada fue exitosa y devolvió un mensaje
+          frappe.show_alert({
+            indicator: 'green',
+            message: __('Printed successfully'),
+          });
+        }
+      },
     });
   }
 
@@ -444,14 +465,15 @@ class PayForm extends DeskForm {
       customize: true,
       title: title,
     };
+    this.send2bridgeRemote('POS Invoice', invoice_name, RM.pos_profile.custom_print_format_pre_cuenta, 'Caja');
 
-    if (order_manage.print_modal) {
-      order_manage.print_modal.set_props(props);
-      order_manage.print_modal.set_title(title);
-      order_manage.print_modal.reload().show();
-    } else {
-      order_manage.print_modal = new DeskModal(props);
-    }
+    // if (order_manage.print_modal) {
+    //   order_manage.print_modal.set_props(props);
+    //   order_manage.print_modal.set_title(title);
+    //   // order_manage.print_modal.reload().show();
+    // } else {
+    //   order_manage.print_modal = new DeskModal(props);
+    // }
   }
 
   update_paid_value() {
