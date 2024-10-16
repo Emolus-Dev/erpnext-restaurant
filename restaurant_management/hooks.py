@@ -16,18 +16,18 @@ source_link = "https://github.com/alphabit-technology/erpnext-restaurant"
 doc_events = {
     "POS Profile": {
         "on_create": "restaurant_management.restaurant_management.page.restaurant_manage.restaurant_manage.set_settings_data",
-        "on_update": "restaurant_management.restaurant_management.page.restaurant_manage.restaurant_manage.set_settings_data"
+        "on_update": "restaurant_management.restaurant_management.page.restaurant_manage.restaurant_manage.set_settings_data",
     },
     "POS Profile User": {
         "on_create": "restaurant_management.restaurant_management.page.restaurant_manage.restaurant_manage.set_settings_data",
-        "on_update": "restaurant_management.restaurant_management.page.restaurant_manage.restaurant_manage.set_settings_data"
+        "on_update": "restaurant_management.restaurant_management.page.restaurant_manage.restaurant_manage.set_settings_data",
     },
 }
 
 app_include_css = [
-	"/assets/restaurant_management/helper/css/desk-form.css",
-  "/assets/restaurant_management/helper/css/custom.css",
-  "/assets/restaurant_management/helper/css/num-pad.css",
+    "/assets/restaurant_management/helper/css/desk-form.css",
+    "/assets/restaurant_management/helper/css/custom.css",
+    "/assets/restaurant_management/helper/css/num-pad.css",
 ]
 
 after_migrate = "restaurant_management.setup.install.after_install"
@@ -40,18 +40,17 @@ after_install = "restaurant_management.setup.install.after_install"
 # app_include_css = "/assets/{app_name}/css/{app_name}.css"
 
 app_include_js = [
-    '/assets/restaurant_management/js/clusterize.min.js',
-    '/assets/restaurant_management/js/interact.min.js',
-    '/assets/restaurant_management/js/drag.js',
-    '/assets/restaurant_management/js/RM.helper.js',
-    '/assets/restaurant_management/js/object-manage.js',
-
+    "/assets/restaurant_management/js/clusterize.min.js",
+    "/assets/restaurant_management/js/interact.min.js",
+    "/assets/restaurant_management/js/drag.js",
+    "/assets/restaurant_management/js/RM.helper.js",
+    "/assets/restaurant_management/js/object-manage.js",
     "/assets/restaurant_management/helper/js/jshtml-class.js",
     "/assets/restaurant_management/helper/js/num-pad-class.js",
     "/assets/restaurant_management/helper/js/desk-modal.js",
     "/assets/restaurant_management/helper/js/frappe-helper-api.js",
     "/assets/restaurant_management/helper/js/frappe-form-class.js",
-    "/assets/restaurant_management/helper/js/desk-form-class.js"
+    "/assets/restaurant_management/helper/js/desk-form-class.js",
 ]
 
 # include js, css files in header of web template
@@ -79,7 +78,7 @@ app_include_js = [
 
 # website user home page (by Role)
 # role_home_page = {{
-#	"Role": "home_page"
+# "Role": "home_page"
 # }}
 
 # Website user home page (by function)
@@ -124,7 +123,7 @@ app_include_js = [
 # 		"on_update": "method",
 # 		"on_cancel": "method",
 # 		"on_trash": "method"
-#	}}
+# }}
 # }}
 
 # Scheduled Tasks
