@@ -723,6 +723,11 @@ class TableOrder(Document):
 
                 data_to_send.append(table.get_command_data(item))
 
+        frappe.log_error("new items in order", json.dumps(data_to_send, indent=2, default=str))
+
+        if data_to_send:
+            pass
+
         self.reload()
         # self.synchronize_data = dict(status=["Sent"])
         self.synchronize(dict(status=["Sent"]))

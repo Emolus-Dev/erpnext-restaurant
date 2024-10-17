@@ -5,12 +5,12 @@
  "doctype": "Page",
  "icon": "fa fa-cutlery",
  "idx": 0,
- "modified": "2021-04-27 10:41:04.051132",
+ "modified": "2024-10-17 13:28:37.660698",
  "modified_by": "Administrator",
  "module": "Restaurant Management",
  "name": "restaurant-manage",
  "owner": "Administrator",
- "page_name": "Restaurant Manage",
+ "page_name": "restaurant-manage",
  "roles": [
   {
    "role": "Sales User"
@@ -26,6 +26,15 @@
   },
   {
    "role": "Restaurant User"
+  },
+  {
+   "role": "Restaurant User"
+  },
+  {
+   "role": "Restaurant Manager"
+  },
+  {
+   "role": "All"
   }
  ],
  "script": null,

@@ -2,6 +2,7 @@
 from __future__ import unicode_literals
 
 from . import __version__ as app_version
+from .fixtures import get_assets
 
 app_name = "restaurant_management"
 app_title = "Restaurant"
@@ -39,19 +40,6 @@ after_install = "restaurant_management.setup.install.after_install"
 # include js, css files in header of desk.html
 # app_include_css = "/assets/{app_name}/css/{app_name}.css"
 
-app_include_js = [
-    "/assets/restaurant_management/js/clusterize.min.js",
-    "/assets/restaurant_management/js/interact.min.js",
-    "/assets/restaurant_management/js/drag.js",
-    "/assets/restaurant_management/js/RM.helper.js",
-    "/assets/restaurant_management/js/object-manage.js",
-    "/assets/restaurant_management/helper/js/jshtml-class.js",
-    "/assets/restaurant_management/helper/js/num-pad-class.js",
-    "/assets/restaurant_management/helper/js/desk-modal.js",
-    "/assets/restaurant_management/helper/js/frappe-helper-api.js",
-    "/assets/restaurant_management/helper/js/frappe-form-class.js",
-    "/assets/restaurant_management/helper/js/desk-form-class.js",
-]
 
 # include js, css files in header of web template
 # web_include_css = "/assets/{app_name}/css/{app_name}.css"
@@ -169,3 +157,6 @@ app_include_js = [
 # exempt linked doctypes from being automatically cancelled
 #
 # auto_cancel_exempted_doctypes = ["Auto Repeat"]
+
+
+app_include_js = get_assets()

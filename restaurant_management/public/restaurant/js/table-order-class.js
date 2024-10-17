@@ -525,6 +525,8 @@ class TableOrder {
 
     RM.working('Send order to Prepare');
 
+    console.log('Actualizando orden');
+
     frappeHelper.api.call({
       model: 'Table Order',
       name: this.data.name,
@@ -535,6 +537,30 @@ class TableOrder {
         this.data = r.message.order.data;
         this.render();
         this.check_items({ items: r.message.items });
+
+        // Validar cuales son los items nuevos
+
+        // Imprimir envios a impresoras
+        // this.send2bridgeRemoteTblOrder(
+        //   'Table Order',
+        //   this.data.name,
+        //   RM.pos_profile.custom_print_format_pre_cuenta,
+        //   'Cocina'
+        // );
+
+        // this.send2bridgeRemoteTblOrder(
+        //   'Table Order',
+        //   this.data.name,
+        //   RM.pos_profile.custom_print_format_pre_cuenta,
+        //   'Cocina'
+        // );
+
+        // this.send2bridgeRemoteTblOrder(
+        //   'Table Order',
+        //   this.data.name,
+        //   RM.pos_profile.custom_print_format_pre_cuenta,
+        //   'Caja'
+        // );
       },
     });
   }

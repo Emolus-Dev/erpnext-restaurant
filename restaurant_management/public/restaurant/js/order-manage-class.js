@@ -839,6 +839,7 @@ class OrderManage extends ObjectManage {
 
       base_html += '</tr>';
     });
+
     $('#' + this.pad_container_name)
       .empty()
       .append(base_html + '</tbody>');
@@ -1011,7 +1012,7 @@ class OrderManage extends ObjectManage {
   }
 
   add_order() {
-    console.log('Test enviando orden')
+    console.log('Test enviando orden');
     RM.working('Adding Order');
     frappeHelper.api.call({
       model: 'Restaurant Object',

@@ -10,7 +10,8 @@
   "item_name",
   "column_break_xglw",
   "item_group",
-  "status"
+  "status",
+  "printer_name"
  ],
  "fields": [
   {
@@ -46,12 +47,18 @@
    "fieldtype": "Data",
    "in_list_view": 1,
    "label": "Item Name"
+  },
+  {
+   "fieldname": "printer_name",
+   "fieldtype": "Link",
+   "label": "Printer Name",
+   "options": "Printer Restaurant"
   }
  ],
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2024-10-14 14:42:35.771912",
+ "modified": "2024-10-17 17:23:14.361384",
  "modified_by": "Administrator",
  "module": "Restaurant Management",
  "name": "Restaurant Menu Item",
