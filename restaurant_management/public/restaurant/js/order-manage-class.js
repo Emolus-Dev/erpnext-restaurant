@@ -1011,6 +1011,7 @@ class OrderManage extends ObjectManage {
   }
 
   add_order() {
+    console.log('Test enviando orden')
     RM.working('Adding Order');
     frappeHelper.api.call({
       model: 'Restaurant Object',

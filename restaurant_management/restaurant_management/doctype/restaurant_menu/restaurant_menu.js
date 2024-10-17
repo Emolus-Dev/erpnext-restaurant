@@ -3,6 +3,15 @@
 
 frappe.ui.form.on('Restaurant Menu', {
   // refresh(frm) {},
+  setup(frm) {
+    frm.set_query('item_group', () => {
+      return {
+        filters: {
+          is_group: 0,
+        },
+      };
+    });
+  },
   async get_items(frm) {
     if (!frm.doc.item_group) {
       return;
