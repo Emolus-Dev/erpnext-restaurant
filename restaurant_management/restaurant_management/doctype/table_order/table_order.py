@@ -15,6 +15,11 @@ from frappe.model.document import Document
 
 from restaurant_management.restaurant_management.page.restaurant_manage.restaurant_manage import RestaurantManage
 
+try:
+    from silent_print.utils.print_format import print_silently
+except Exception:
+    frappe.log_error("error importar print silent", frappe.get_traceback())
+
 status_attending = "Attending"
 
 
@@ -725,8 +730,14 @@ class TableOrder(Document):
 
         frappe.log_error("new items in order", json.dumps(data_to_send, indent=2, default=str))
 
-        if data_to_send:
-            pass
+        # try:
+        #     if data_to_send:
+        #         for added_data in data_to_send:
+        #             # Imprimir aquí
+        #             print_silently(self.doctype, self.name, "Orden Cocina", added_data.get("printer_name", "COCINA1"))
+
+        # except Exception:
+        #     frappe.log_error("error imprimir", frappe.get_traceback())
 
         self.reload()
         # self.synchronize_data = dict(status=["Sent"])

@@ -34,6 +34,12 @@ app_include_css = [
 after_migrate = "restaurant_management.setup.install.after_install"
 after_install = "restaurant_management.setup.install.after_install"
 
+jinja = {
+    "methods": [
+        "restaurant_management.api.change_order_item_to_sent",
+    ]
+}
+
 # Includes in <head>
 # ------------------
 

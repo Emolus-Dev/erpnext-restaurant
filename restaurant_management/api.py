@@ -85,3 +85,10 @@ def validate_link():
 @frappe.whitelist()
 def new_items_in_order(doc, event):
     pass
+
+
+@frappe.whitelist()
+def change_order_item_to_sent(item_name):
+    order_item = frappe.get_doc('Order Entry Item', item_name)
+    order_item.status = "Completed"
+    order_item.save()

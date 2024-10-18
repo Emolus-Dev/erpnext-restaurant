@@ -1,8 +1,8 @@
 class MenuManage extends ObjectManage {
   #items = {};
   menu_items = {};
-  title = "Menu Management";
-  identifier = "menu-manage";
+  title = 'Menu Management';
+  identifier = 'menu-manage';
 
   constructor(options) {
     super(options);
@@ -14,9 +14,13 @@ class MenuManage extends ObjectManage {
     this.initialize();
   }
 
-  get items() { return this.#items }
+  get items() {
+    return this.#items;
+  }
 
-  get container() { return document.getElementById(this.identifier); }
+  get container() {
+    return document.getElementById(this.identifier);
+  }
 
   init_synchronize() {
     /*frappe.realtime.on("pos_profile_update", () => {
@@ -39,12 +43,9 @@ class MenuManage extends ObjectManage {
   initialize() {
     if (!this.is_enabled_to_open()) return;
 
-    this.modal = RMHelper.default_full_modal(
-      "Menu Management",
-      () => {
-        this.make();
-      }
-    );
+    this.modal = RMHelper.default_full_modal('Menu Management', () => {
+      this.make();
+    });
   }
 
   is_enabled_to_open() {
@@ -62,7 +63,7 @@ class MenuManage extends ObjectManage {
   }
 
   close() {
-    this.modal.hide()
+    this.modal.hide();
   }
 
   make() {
@@ -74,15 +75,13 @@ class MenuManage extends ObjectManage {
   }
 
   is_open() {
-    return this.modal.modal.display
+    return this.modal.modal.display;
   }
 
   make_dom() {
     this.modal.container.append(this.template());
 
-    this.modal.title_container.empty().append(
-      RMHelper.return_main_button(this.title, () => this.modal.hide()).html()
-    );
+    this.modal.title_container.empty().append(RMHelper.return_main_button(this.title, () => this.modal.hide()).html());
   }
 
   template() {
@@ -91,7 +90,7 @@ class MenuManage extends ObjectManage {
       properties: {
         id: this.item_container_name,
         class: 'product-list',
-        style: "position: relative; height: calc(100% - 80px); overflow: auto;"
+        style: 'position: relative; height: calc(100% - 80px); overflow: auto;',
         //style: "height: calc(100% - 30px); overflow-y: auto;"
       },
     });
@@ -99,7 +98,7 @@ class MenuManage extends ObjectManage {
     this.item_type_wrapper = frappe.jshtml({
       tag: 'div',
       properties: {
-        class: "item-type-wrapper",
+        class: 'item-type-wrapper',
         /*style: "overflow-y: auto; display: flex;"*/
       },
     });
@@ -107,7 +106,7 @@ class MenuManage extends ObjectManage {
     this.item_parent_wrapper = frappe.jshtml({
       tag: 'div',
       properties: {
-        style: "overflow-y: auto; display: flex; padding: 2px;"
+        style: 'overflow-y: auto; display: flex; padding: 2px;',
       },
     });
 
@@ -135,7 +134,7 @@ class MenuManage extends ObjectManage {
     this.#items = new ItemsTree({
       wrapper: $(`#${this.item_container_name}`),
       order_manage: this,
-      in_menu: false
+      in_menu: false,
     });
   }
 
@@ -149,38 +148,42 @@ class MenuManage extends ObjectManage {
     const item_title = item_name || item_code;
     const veg = item.item_type === 'Veg';
     item.in_menu = this.items_in_menu.includes(item.item_code);
-    
+
     const buttonAddTemplate = (item) => {
       return `
         <div class="widget-action-item">
           <button class="btn btn-${item.in_menu ? 'danger' : 'success'} btn-sm" style="border-radius: 20px;">
             <i class="fa fa-${item.in_menu ? 'trash' : 'plus'}"></i>
-            ${item.in_menu ? "Remove" : "Add"}
+            ${item.in_menu ? 'Remove' : 'Add'}
           </button>
         </div>
-      `
-    }
+      `;
+    };
 
-    item.add_in_menu = frappe.jshtml({
-      tag: "div",
-      properties: {
-        class: "widget-action",
-        style: "padding: 0; margin: 0; border-radius: 20px;"
-      },
-      content: buttonAddTemplate(item)
-    }).on("click", () => {
-      const items = this.items;
-      this.set_item_in_menu(item, buttonAddTemplate);
-    });
+    item.add_in_menu = frappe
+      .jshtml({
+        tag: 'div',
+        properties: {
+          class: 'widget-action',
+          style: 'padding: 0; margin: 0; border-radius: 20px;',
+        },
+        content: buttonAddTemplate(item),
+      })
+      .on('click', () => {
+        const items = this.items;
+        this.set_item_in_menu(item, buttonAddTemplate);
+      });
 
-    return frappe.jshtml({
-      tag: "div",
-      properties: {
-        class: "widget widget-shadow shortcut-widget-box",
-        style: "padding: 0; margin: 0; border-radius: 20px;"
-      },
-      content: template()
-    }).html()
+    return frappe
+      .jshtml({
+        tag: 'div',
+        properties: {
+          class: 'widget widget-shadow shortcut-widget-box',
+          style: 'padding: 0; margin: 0; border-radius: 20px;',
+        },
+        content: template(),
+      })
+      .html();
 
     function template() {
       return `
@@ -189,9 +192,7 @@ class MenuManage extends ObjectManage {
           item-code="${item_code}" is-customizable=${is_customizable} style="border-radius: 5px 20px 25px; width: 100%;">
             <div class="inner" style="position: inherit; z-index: 100">
                 <h4 class="title">
-                    <i class="fa fa-circle" style="color: var(--${
-                      veg ? "success" : "danger"
-                    })"></i>
+                    <i class="fa fa-circle" style="color: var(--${veg ? 'success' : 'danger'})"></i>
                     ${item_title}
                 </h4>
                 <p> ${description}</p>
@@ -219,12 +220,12 @@ class MenuManage extends ObjectManage {
 
   set_item_in_menu(item, buttonAddTemplate) {
     const items = this.items;
-    const current = items.find(i => i.item_code === item.item_code);
-    
-    RM.call("set_item_in_menu", {
+    const current = items.find((i) => i.item_code === item.item_code);
+
+    RM.call('set_item_in_menu', {
       item_code: item.item_code,
-      in_menu: !current.in_menu
-    }).then(r => {
+      in_menu: !current.in_menu,
+    }).then((r) => {
       if (r) {
         item.in_menu = !current.in_menu;
         item.add_in_menu.val(buttonAddTemplate(item));

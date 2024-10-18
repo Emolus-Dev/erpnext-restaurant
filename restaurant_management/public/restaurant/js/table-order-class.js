@@ -656,7 +656,7 @@ class TableOrder {
       'Table Order',
       this.data.name,
       RM.pos_profile.custom_print_format_pre_cuenta,
-      'Caja'
+      'COCINA1'
     );
 
     // if (order_manage.print_modal) {

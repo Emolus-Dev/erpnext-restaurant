@@ -3,7 +3,7 @@ class ItemsTree {
 
   constructor({ wrapper, order_manage, item_template, onSelect, in_menu }) {
     this.item_template = item_template;
-    this.in_menu = in_menu; 
+    this.in_menu = in_menu;
     this.onSelect = onSelect;
     this.wrapper = wrapper;
     this.order_manage = order_manage;
@@ -13,20 +13,26 @@ class ItemsTree {
     this.currency = RM.pos_profile.currency;
 
     const filters = {
-      is_group: 1
+      is_group: 1,
+    };
+
+    if (this.in_menu) {
+      // filters.item_group_name = ['in', RM.menu.items_groups];
+      const uniqueGroups = [...new Set(RM.menu.items_groups)];
+      filters.item_group_name = ['in', uniqueGroups];
     }
 
-    if(this.in_menu) {
-      filters.item_group_name = ["in", RM.menu.items_groups];
-    }
+    console.log('filters', filters);
 
-    frappe.db.get_list("Item Group", { fields: ["*"], filters, order_by: "lft" }).then(groups => {
+    frappe.db.get_list('Item Group', { fields: ['*'], filters, order_by: 'lft' }).then((groups) => {
+      console.log('groups', groups);
       this.make_dom();
       this.render_parent_group(groups);
     });
   }
 
   render_parent_group(groups) {
+    console.log('render_parent_group', groups);
     const self = this;
     this.item_type_wrapper.append(`
       <div class="input-group mb-0">
@@ -36,14 +42,13 @@ class ItemsTree {
         </div>
         <input type="text" class="form-control" placeholder="${__('Search Items')}" aria-label="Search Items">
       </div>
-      `
-    );
+      `);
 
     this.search_input = {
-      $input: $(this.item_type_wrapper.find("input"))
+      $input: $(this.item_type_wrapper.find('input')),
     };
 
-    this.item_type_wrapper.find(".item-type").click(function (e) {
+    this.item_type_wrapper.find('.item-type').click(function (e) {
       $(this).toggleClass('active').siblings().removeClass('active');
 
       if ($(this).hasClass('active')) {
@@ -53,7 +58,7 @@ class ItemsTree {
       }
 
       setTimeout(() => {
-        self.current_item_manage && self.current_item_manage.load_items_data()
+        self.current_item_manage && self.current_item_manage.load_items_data();
       }, 0);
     });
 
@@ -69,35 +74,41 @@ class ItemsTree {
       this.search_input.$input.focus();
     });
 
-    groups.forEach(group => {
-      const icon_class = group.name === "All Item Groups" ? "fa fa-list" : group.icon || "fa fa-chevron-right";
-      const style = group.name === "Options" ? "float: right; position:absolute; right:0;" : "";
+    groups.forEach((group) => {
+      const icon_class = group.name === 'All Item Groups' ? 'fa fa-list' : group.icon || 'fa fa-chevron-right';
+      const style = group.name === 'Options' ? 'float: right; position:absolute; right:0;' : '';
       this.item_parent_wrapper.append(`
         <button class="btn btn-default btn-flat item-group-action" data-group="${group.name}" style="${style}">
           <span class="${icon_class}" icon-group="icon-group"></span>
-          ${group.name === "All Item Groups" ? __("All") : group.name}
+          ${group.name === 'All Item Groups' ? __('All') : group.name}
         </button>
-      `)
+      `);
     });
 
-    this.item_parent_wrapper.find(".item-group-action").click(function (e) {
-      $(this).addClass('active').removeClass("text-muted").siblings().removeClass('active').addClass("text-muted");
+    this.item_parent_wrapper.find('.item-group-action').click(function (e) {
+      $(this).addClass('active').removeClass('text-muted').siblings().removeClass('active').addClass('text-muted');
       const item_group = $(this).attr('data-group');
 
-      const filter = item_group === "All Item Groups" ? { name: item_group } : { 
-        parent_item_group: item_group
-      };
+      const filter =
+        item_group === 'All Item Groups'
+          ? { name: item_group }
+          : {
+              parent_item_group: item_group,
+            };
 
-      if(this.in_menu) {
-        filter.item_group_name = ["in", RM.menu.items_groups];
+      if (this.in_menu) {
+        filter.item_group_name = ['in', RM.menu.items_groups];
       }
 
-      frappe.db.get_list("Item Group", { fields: ["*"], filters: filter }).then(groups => {
+      console.log('filter', filter);
+
+      frappe.db.get_list('Item Group', { fields: ['*'], filters: filter }).then((groups) => {
+        console.log('groups', groups);
         self.render_tree(groups, self.wrapper.find('.tree'), true);
       });
     });
 
-    this.item_parent_wrapper.find(".item-group-action:first").click();
+    this.item_parent_wrapper.find('.item-group-action:first').click();
   }
 
   make_dom() {
@@ -105,12 +116,11 @@ class ItemsTree {
 			<div class="items-wrapper col-md-12 layout-main-section-wrapper" style="padding: 0; min-width: 330px;">
         <div class="layout-main-section frappe-card" style="background-color:unset !important; box-shadow:none;">
           <div class="tree with-skeleton opened" style="padding:0;">
-          
+
           </div>
         </div>
-      </div>		
-      `
-    );
+      </div>
+      `);
   }
 
   update_items(items = []) {
@@ -120,30 +130,33 @@ class ItemsTree {
   render_tree(data, wrapper = null, opened = false) {
     wrapper.empty();
 
-    data.forEach(item => {
+    data.forEach((item) => {
+      console.log('item Tree', item);
       this.groups ??= {};
       this.groups[item.name] = item;
 
       const icon = frappe.jshtml({
-        tag: "use",
+        tag: 'use',
         properties: {
-          href: "#icon-right"
-        }
+          href: '#icon-right',
+        },
       });
 
       this[`${item.name}_count`] = frappe.jshtml({
-        tag: "span",
+        tag: 'span',
         properties: {
-          class: "badge"
+          class: 'badge',
         },
-        content: 0
+        content: 0,
       });
 
       const action = frappe.jshtml({
-        tag: "li",
+        tag: 'li',
         properties: {
-          class: "tree-node bg-transparent",
-          style: `padding:5px; border-radius:20px; color:var(--dark); border: 1px solid var(--gray-dark); margin: 5px; background-color: var(--light); ${item.name === "All Item Groups" ? "display: none;" : ";"}`
+          class: 'tree-node bg-transparent',
+          style: `padding:5px; border-radius:20px; color:var(--dark); border: 1px solid var(--gray-dark); margin: 5px; background-color: var(--light); ${
+            item.name === 'All Item Groups' ? 'display: none;' : ';'
+          }`,
         },
         content: `
           <span class="tree-item">
@@ -156,7 +169,7 @@ class ItemsTree {
               ${icon.html()}
             </svg>
           </span>
-        `
+        `,
       });
 
       wrapper.append(`
@@ -173,11 +186,11 @@ class ItemsTree {
         const children_wrapper = wrapper.find(`[area-children="${item.name}"]`);
         const items_container = wrapper.find(`[area-items="${item.name}"]`);
 
-        const children = data.filter(group => (group.parent_item_group === item.name));
+        const children = data.filter((group) => group.parent_item_group === item.name);
 
         this.render_tree(children, children_wrapper);
         children_wrapper.toggle();
-        icon.obj.setAttribute("href", `#icon-${children_wrapper.is(":visible") ? 'down' : 'right'}`);
+        icon.obj.setAttribute('href', `#icon-${children_wrapper.is(':visible') ? 'down' : 'right'}`);
 
         items_container.toggle();
 
@@ -188,7 +201,7 @@ class ItemsTree {
             item_tree: this,
             item_group: item.name,
             search_term: this.search_input.$input.val(),
-            search_field: this.search_input
+            search_field: this.search_input,
           });
         } else {
           this.groups[item.name].items_manage.search();
@@ -197,11 +210,11 @@ class ItemsTree {
         this.current_item_manage = this.groups[item.name].items_manage;
 
         this.update_items_count();
-      }
+      };
 
       this.update_items_count();
       setTimeout(() => {
-        item.name === "All Item Groups" && open_children();
+        item.name === 'All Item Groups' && open_children();
         //opened && open_children();
       }, 0);
 
@@ -212,24 +225,25 @@ class ItemsTree {
   }
 
   update_items_count() {
-    frappe.call({
-      method: RM.url_manage + 'group_items_count',
-      freeze: true
-    }).then(r => {
-      r.message.forEach(item => {
-        const badge = this[`${item.item_group}_count`];
-        if (badge) {
-          badge.val(item.items_count);
-          if (item.items_count <= 1) {
-            badge.remove_class('badge-success bg-warning').add_class('badge-danger');
-          } else if (item.items_count > 1 && item.items_count <= 5) {
-            badge.remove_class('badge-dander bg-success').add_class('badge-warning');
-          } else {
-            badge.remove_class('badge-warning bg-danger').add_class('badge-success');
+    frappe
+      .call({
+        method: RM.url_manage + 'group_items_count',
+        freeze: true,
+      })
+      .then((r) => {
+        r.message.forEach((item) => {
+          const badge = this[`${item.item_group}_count`];
+          if (badge) {
+            badge.val(item.items_count);
+            if (item.items_count <= 1) {
+              badge.remove_class('badge-success bg-warning').add_class('badge-danger');
+            } else if (item.items_count > 1 && item.items_count <= 5) {
+              badge.remove_class('badge-dander bg-success').add_class('badge-warning');
+            } else {
+              badge.remove_class('badge-warning bg-danger').add_class('badge-success');
+            }
           }
-        }
+        });
       });
-
-    });
   }
 }

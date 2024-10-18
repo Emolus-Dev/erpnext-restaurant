@@ -7,8 +7,8 @@ from erpnext.accounts.doctype.pos_invoice.pos_invoice import get_stock_availabil
 class RestaurantManage:
     @staticmethod
     def production_center_notify(status):
-        object_in_status = frappe.db.get_all("Status Managed Production Center", 
-            fields=["parent"], 
+        object_in_status = frappe.db.get_all("Status Managed Production Center",
+            fields=["parent"],
             filters={
               "parentType": "Restaurant Object",
               "status_managed": ("in", status)
@@ -214,6 +214,8 @@ def get_items(start, page_length, price_list, item_group, pos_profile, item_type
     data = dict()
     result = []
 
+    page_length = 9999
+
     allow_negative_stock = frappe.db.get_single_value(
         'Stock Settings', 'allow_negative_stock')
     warehouse, hide_unavailable_items = frappe.db.get_value('POS Profile', pos_profile,
@@ -321,6 +323,9 @@ def get_items(start, page_length, price_list, item_group, pos_profile, item_type
         'items': result
     }
 
+    import json
+    frappe.log_error("items", json.dumps(result, indent=2, default=str))
+
     return res
 
 
@@ -345,7 +350,7 @@ def search_serial_or_batch_or_barcode_number(search_value):
 		return batch_no_data
 
 	return {}
-    
+
 def get_conditions(item_code, serial_no, batch_no, barcode):
 	if serial_no or batch_no or barcode:
 		return "item.name = {0}".format(frappe.db.escape(item_code))
@@ -369,9 +374,9 @@ def set_item_in_menu(item_code, in_menu):
   if not pos_data.get("has_pos"):
     frappe.throw("POS Profile is not set for this user")
     return
-  
+
   pos = pos_data.get("pos")
-  
+
   if not pos.restaurant_menu:
     frappe.db.set_value("POS Profile", pos.name, "restaurant_menu", frappe.new_doc("Restaurant Menu").insert().name)
     pos.reload()
