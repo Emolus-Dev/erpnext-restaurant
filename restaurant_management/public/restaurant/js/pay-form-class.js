@@ -317,7 +317,8 @@ class PayForm extends DeskForm {
       // frappe.db.set_value('Table Order', this.order.data.name, 'status', 'Sent');
 
       // this.send2bridgeRemote('Table Order', this.order.data.name, 'Factura La Rosa', 'Caja');
-      this.send2bridgeRemote('Table Order', this.order.data.name, RM.pos_profile.print_format, 'COCINA1');
+      // this.send2bridgeRemote('Table Order', this.order.data.name, RM.pos_profile.print_format, 'COCINA1');
+      this.send2bridgeRemote('Table Order', this.order.data.name, 'Orden Cocina', 'COCINA1');
     });
   }
 
@@ -542,7 +543,8 @@ class PayForm extends DeskForm {
       customize: true,
       title: title,
     };
-    this.send2bridgeRemote('POS Invoice', invoice_name, RM.pos_profile.custom_print_format_pre_cuenta, 'COCINA1');
+    // this.send2bridgeRemote('POS Invoice', invoice_name, RM.pos_profile.custom_print_format_pre_cuenta, 'COCINA1');
+    this.send2bridgeRemote('POS Invoice', invoice_name, 'Orden Cocina', 'COCINA1');
 
     // if (order_manage.print_modal) {
     //   order_manage.print_modal.set_props(props);

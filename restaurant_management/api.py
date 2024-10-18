@@ -92,3 +92,10 @@ def change_order_item_to_sent(item_name):
     order_item = frappe.get_doc('Order Entry Item', item_name)
     order_item.status = "Completed"
     order_item.save()
+
+
+@frappe.whitelist()
+def get_menu_items(item_group):
+    return frappe.db.get_all('Item',
+                             filters={'item_group': item_group},
+                             fields=['name', 'item_name', 'item_group'])

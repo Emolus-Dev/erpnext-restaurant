@@ -655,7 +655,8 @@ class TableOrder {
     this.send2bridgeRemoteTblOrder(
       'Table Order',
       this.data.name,
-      RM.pos_profile.custom_print_format_pre_cuenta,
+      // RM.pos_profile.custom_print_format_pre_cuenta,
+      'Orden Cocina',
       'COCINA1'
     );
 

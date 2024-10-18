@@ -728,7 +728,7 @@ class TableOrder(Document):
 
                 data_to_send.append(table.get_command_data(item))
 
-        frappe.log_error("new items in order", json.dumps(data_to_send, indent=2, default=str))
+        # frappe.log_error("new items in order", json.dumps(data_to_send, indent=2, default=str))
 
         # try:
         #     if data_to_send:
