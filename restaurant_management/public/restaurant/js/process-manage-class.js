@@ -195,6 +195,26 @@ ProcessManage = class ProcessManage {
 
     const add_order = (order) => {
       console.log('se agrego a la order', order);
+
+      if (!order.data && !order.items) {
+        console.log('Realtime nueva orden', order);
+        console.log('Current Object', this);
+
+        console.log(order.entry_name, this.name);
+
+        frappe.db.get_value('Restaurant Object', this.name, ['default_print_type', 'print_copies']).then((r) => {
+          let values = r.message;
+          console.log(values, order, this.name);
+
+          this.send2bridgeRemoteProductioCenter(
+            'Order Entry Item',
+            order.entry_name,
+            'Order Account Item',
+            values.default_print_type
+          );
+        });
+      }
+
       const data = order.data || order;
       this.orders ??= {};
       this.orders[data.name] = order;
@@ -295,6 +315,7 @@ ProcessManage = class ProcessManage {
 
     console.log('props', props);
     console.log('data', data);
+    console.log('this', this);
     // if (this.print_modal) {
     //   this.print_modal.set_props(props);
     //   this.print_modal.set_title(title);
@@ -303,7 +324,17 @@ ProcessManage = class ProcessManage {
     //   this.print_modal = new DeskModal(props);
     // }
 
-    this.send2bridgeRemoteProductioCenter('Order Entry Item', data.entry_name, 'Order Account Item', 'COCINA1');
+    frappe.db.get_value('Restaurant Object', this.name, ['default_print_type', 'print_copies']).then((r) => {
+      let values = r.message;
+      console.log(values, data.entry_name, this.name);
+
+      this.send2bridgeRemoteProductioCenter(
+        'Order Entry Item',
+        data.entry_name,
+        'Order Account Item',
+        values.default_print_type
+      );
+    });
   }
 
   send2bridgeRemoteProductioCenter(doctype, name, print_format, print_type, pos_profile = '') {
@@ -368,6 +399,8 @@ ProcessManage = class ProcessManage {
         this.items[item.identifier].process_manage = this;
       });
     });
+
+    console.log('this.items se agrego una nueva orden', this);
 
     setTimeout(() => {
       this.debug_items();

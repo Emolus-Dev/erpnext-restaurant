@@ -650,13 +650,26 @@ class TableOrder {
       title: title,
     };
 
-    this.send2bridgeRemoteTblOrder(
-      'Table Order',
-      this.data.name,
-      // RM.pos_profile.custom_print_format_pre_cuenta,
-      'Orden Cocina',
-      'COCINA1'
-    );
+    // this.send2bridgeRemoteTblOrder(
+    //   'Table Order',
+    //   this.data.name,
+    //   // RM.pos_profile.custom_print_format_pre_cuenta,
+    //   'Orden Cocina',
+    //   'COCINA1'
+    // );
+
+    frappe.db
+      .get_value('Silent Print Format', RM.pos_profile.custom_print_format_pre_cuenta, ['default_print_type'])
+      .then((r) => {
+        let values = r.message;
+
+        this.send2bridgeRemoteTblOrder(
+          'Table Order',
+          this.data.name,
+          RM.pos_profile.custom_print_format_pre_cuenta,
+          values.default_print_type
+        );
+      });
 
     // if (order_manage.print_modal) {
     //   order_manage.print_modal.set_props(props);

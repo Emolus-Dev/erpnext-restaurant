@@ -235,13 +235,14 @@
    "options": "Print Type"
   },
   {
+   "default": "1",
    "fieldname": "print_copies",
    "fieldtype": "Int",
    "label": "Print Copies"
   }
  ],
  "links": [],
- "modified": "2024-10-19 17:46:43.830577",
+ "modified": "2024-10-19 20:08:45.675865",
  "modified_by": "Administrator",
  "module": "Restaurant Management",
  "name": "Restaurant Object",
