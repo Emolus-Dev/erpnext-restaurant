@@ -525,8 +525,6 @@ class TableOrder {
 
     RM.working('Send order to Prepare');
 
-    console.log('Actualizando orden');
-
     frappeHelper.api.call({
       model: 'Table Order',
       name: this.data.name,
@@ -695,7 +693,6 @@ class TableOrder {
             //location: this.order_manage.invoice_wrapper.JQ()
           });
         } else {
-          console.log('this.customer_editor', this.customer_editor);
           this.customer_editor = new CustomerEditor({
             order: this,
             //location: this.order_manage.invoice_wrapper.JQ()
@@ -803,7 +800,7 @@ class CustomerEditor extends DeskForm {
 
   async make() {
     await super.make();
-    console.log('this.order.data make', this.order.data);
+
     this.on(['address'], 'change', (field) => {
       this.get_delivery_address();
     });
@@ -865,8 +862,6 @@ class CustomerEditor extends DeskForm {
             <span class="sr-only">${__('Validando NIT...')}</span>
           </div>`,
           callback: ({ message }) => {
-            console.log('message', message);
-
             this.set_value('customer', message.name);
 
             this.set_value('tax_id', message.tax_id);

@@ -194,6 +194,7 @@ ProcessManage = class ProcessManage {
     };
 
     const add_order = (order) => {
+      console.log('se agrego a la order', order);
       const data = order.data || order;
       this.orders ??= {};
       this.orders[data.name] = order;

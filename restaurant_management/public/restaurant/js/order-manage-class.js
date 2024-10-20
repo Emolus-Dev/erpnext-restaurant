@@ -166,7 +166,7 @@ class OrderManage extends ObjectManage {
     this.not_selected_order = frappe.jshtml({
       tag: 'div',
       properties: { class: 'no-order-message' },
-      content: RMHelper.no_data('Select or create an Order'),
+      content: RMHelper.no_data(__('Select or create an Order')),
     });
 
     this.modal.container.append(this.template());
@@ -551,7 +551,6 @@ class OrderManage extends ObjectManage {
         },
         on: {
           click: (obj) => {
-            console.log('obj', obj);
             this.num_pad.input = obj;
           },
         },
@@ -599,7 +598,6 @@ class OrderManage extends ObjectManage {
         on: {
           click: () => {
             if (this.num_pad.input && !this.num_pad.input.is_disabled) {
-              console.log('this.num_pad.input', this.num_pad.input);
               this.num_pad.input.plus();
             }
           },
@@ -1012,7 +1010,6 @@ class OrderManage extends ObjectManage {
   }
 
   add_order() {
-    console.log('Test enviando orden');
     RM.working('Adding Order');
     frappeHelper.api.call({
       model: 'Restaurant Object',

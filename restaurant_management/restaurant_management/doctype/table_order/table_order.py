@@ -15,10 +15,10 @@ from frappe.model.document import Document
 
 from restaurant_management.restaurant_management.page.restaurant_manage.restaurant_manage import RestaurantManage
 
-try:
-    from silent_print.utils.print_format import print_silently
-except Exception:
-    frappe.log_error("error importar print silent", frappe.get_traceback())
+# try:
+#     from silent_print.utils.print_format import print_silently
+# except Exception:
+#     frappe.log_error("error importar print silent", frappe.get_traceback())
 
 status_attending = "Attending"
 
@@ -170,6 +170,15 @@ class TableOrder(Document):
         last_table = self.options_param(options, "last_table")
         status = self.options_param(options, "status")
         item_removed = self.options_param(options, "item_removed")
+
+        # data_realtime_ = (
+        #     dict(
+        #         action=action,
+        #         data=[] if action is None else self.data(items, last_table),
+        #         client=self.options_param(options, "client"),
+        #         item_removed=item_removed,
+        #     ),
+        # )
 
         frappe.publish_realtime(
             "synchronize_order_data",
@@ -532,7 +541,7 @@ class TableOrder(Document):
                         (
                             f"`{key}`",
                             """{value}""".format(
-                                value=(f"'{val}'" if val is not None else "")
+                                value=(f"'{val}'" if val is not None else "''")
                                 if key == "item_tax_template"
                                 else frappe.db.escape(val)
                             ),

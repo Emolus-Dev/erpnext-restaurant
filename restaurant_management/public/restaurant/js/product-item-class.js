@@ -56,7 +56,7 @@ class ProductItem {
     const pos_profile = RM.pos_profile.name;
     const force_parent = 0;
     const item_type = this.item_tree.item_type_filter;
-    console.log('Obtener Items');
+
     return new Promise((res) => {
       frappe
         .call({
@@ -91,8 +91,6 @@ class ProductItem {
     const raw_items = items
       //.filter(item => {console.log(item); return item.item_group === this.parent_item_group})
       .map((item) => this.get_item_html(item));
-
-    console.log('raw_items', raw_items);
 
     raw_items.reduce((acc, item) => (acc += item), '');
 

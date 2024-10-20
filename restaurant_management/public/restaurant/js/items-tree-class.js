@@ -22,17 +22,13 @@ class ItemsTree {
       filters.item_group_name = ['in', uniqueGroups];
     }
 
-    console.log('filters', filters);
-
     frappe.db.get_list('Item Group', { fields: ['*'], filters, order_by: 'lft' }).then((groups) => {
-      console.log('groups', groups);
       this.make_dom();
       this.render_parent_group(groups);
     });
   }
 
   render_parent_group(groups) {
-    console.log('render_parent_group', groups);
     const self = this;
     this.item_type_wrapper.append(`
       <div class="input-group mb-0">
@@ -100,10 +96,7 @@ class ItemsTree {
         filter.item_group_name = ['in', RM.menu.items_groups];
       }
 
-      console.log('filter', filter);
-
       frappe.db.get_list('Item Group', { fields: ['*'], filters: filter }).then((groups) => {
-        console.log('groups', groups);
         self.render_tree(groups, self.wrapper.find('.tree'), true);
       });
     });
@@ -131,7 +124,6 @@ class ItemsTree {
     wrapper.empty();
 
     data.forEach((item) => {
-      console.log('item Tree', item);
       this.groups ??= {};
       this.groups[item.name] = item;
 

@@ -45,8 +45,6 @@ class PayForm extends DeskForm {
 
     this.init_synchronize();
 
-    console.log('this.order.data', this.on);
-
     this.on('customer_group', 'change', (field) => {
       let customer_group_value = field.get_value();
       this.order.data.customer_group = customer_group_value;
@@ -96,8 +94,6 @@ class PayForm extends DeskForm {
             <span class="sr-only">${__('Validando NIT...')}</span>
           </div>`,
             callback: ({ message }) => {
-              console.log('message', message);
-
               this.set_value('customer', message.name);
               this.order.data.customer = message.name;
 

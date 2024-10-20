@@ -37,13 +37,11 @@ frappe.ui.form.on('Restaurant Menu', {
         let item_list = r.message;
 
         // on success
-        console.log('item_list', frm.doc.item_group);
 
         item_list.forEach((item) => {
           const existingItem = frm.doc.menu_items.find((menuItem) => menuItem.item === item.name);
-          console.log('item', item);
+
           if (!existingItem) {
-            console.log('item', item);
             frm.add_child('menu_items', {
               item: item.name,
               item_name: item.item_name,
