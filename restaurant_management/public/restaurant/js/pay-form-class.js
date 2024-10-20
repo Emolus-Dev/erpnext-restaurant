@@ -551,8 +551,18 @@ class PayForm extends DeskForm {
       customize: true,
       title: title,
     };
-    // this.send2bridgeRemote('POS Invoice', invoice_name, RM.pos_profile.custom_print_format_pre_cuenta, 'COCINA1');
-    this.send2bridgeRemote('POS Invoice', invoice_name, 'Orden Cocina', 'COCINA1');
+    frappe.db
+    .get_value('Silent Print Format', RM.pos_profile.print_format, ['default_print_type'])
+    .then((r) => {
+      let values = r.message;
+      console.log(RM.pos_profile.print_format + ' ' +values)
+      this.send2bridgeRemote(
+        'POS Invoice',
+        invoice_name,
+        RM.pos_profile.print_format,
+        values.default_print_type
+      );
+    });
 
     // if (order_manage.print_modal) {
     //   order_manage.print_modal.set_props(props);
