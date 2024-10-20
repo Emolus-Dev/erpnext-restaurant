@@ -171,14 +171,16 @@ class TableOrder(Document):
         status = self.options_param(options, "status")
         item_removed = self.options_param(options, "item_removed")
 
-        # data_realtime_ = (
-        #     dict(
-        #         action=action,
-        #         data=[] if action is None else self.data(items, last_table),
-        #         client=self.options_param(options, "client"),
-        #         item_removed=item_removed,
-        #     ),
-        # )
+        data_realtime_ = (
+            dict(
+                action=action,
+                data=[] if action is None else self.data(items, last_table),
+                client=self.options_param(options, "client"),
+                item_removed=item_removed,
+            ),
+        )
+
+        frappe.log_error("data realtime --> ", data_realtime_)
 
         frappe.publish_realtime(
             "synchronize_order_data",
@@ -191,6 +193,8 @@ class TableOrder(Document):
         )
 
         self._table.synchronize()
+
+        frappe.log_error("2 data realtime --> ", f"{self._table.name} -- {self.name}")
 
         if status is not None:
             RestaurantManage.production_center_notify(status)
@@ -737,7 +741,7 @@ class TableOrder(Document):
 
                 data_to_send.append(table.get_command_data(item))
 
-        # frappe.log_error("new items in order", json.dumps(data_to_send, indent=2, default=str))
+        frappe.log_error("new items in order", json.dumps(data_to_send, indent=2, default=str))
 
         # try:
         #     if data_to_send:

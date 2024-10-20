@@ -598,6 +598,8 @@ RestaurantManage = class RestaurantManage {
       const data = r.data;
       const order = data.order;
 
+      console.log('data synchronize_order_data', data);
+
       this.request_client = r.client;
       check_items_in_process_manage(data.items, r.item_removed);
 

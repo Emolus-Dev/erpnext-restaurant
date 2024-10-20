@@ -293,13 +293,38 @@ ProcessManage = class ProcessManage {
       title: title,
     };
 
-    if (this.print_modal) {
-      this.print_modal.set_props(props);
-      this.print_modal.set_title(title);
-      this.print_modal.reload().show();
-    } else {
-      this.print_modal = new DeskModal(props);
-    }
+    console.log('props', props);
+    console.log('data', data);
+    // if (this.print_modal) {
+    //   this.print_modal.set_props(props);
+    //   this.print_modal.set_title(title);
+    //   this.print_modal.reload().show();
+    // } else {
+    //   this.print_modal = new DeskModal(props);
+    // }
+
+    this.send2bridgeRemoteProductioCenter('Order Entry Item', data.entry_name, 'Order Account Item', 'COCINA1');
+  }
+
+  send2bridgeRemoteProductioCenter(doctype, name, print_format, print_type, pos_profile = '') {
+    frappe.call({
+      method: 'silent_print.utils.print_format.print_silently',
+      args: {
+        doctype: doctype,
+        name: name,
+        print_format: print_format,
+        print_type: print_type,
+      },
+      callback: function (r) {
+        if (r.message) {
+          // Si la llamada fue exitosa y devolvió un mensaje
+          frappe.show_alert({
+            indicator: 'green',
+            message: __('Printed successfully'),
+          });
+        }
+      },
+    });
   }
 
   get_field(group, field) {

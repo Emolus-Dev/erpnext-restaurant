@@ -98,6 +98,7 @@ class RestaurantManage:
                     data[d]["data"][o.name]["count"] = o.count
 
             if d == "Production Center":
+                frappe.log_error("data d --> ", data[d])
                 for pc in data[d]["data"]:
                     production_center = frappe.get_doc("Restaurant Object", pc)
 

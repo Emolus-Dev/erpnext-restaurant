@@ -67,6 +67,9 @@ class RestaurantObject(Document):
     def synchronize(self):
         if self.type == "Production Center":
             # TODO: Printer
+            frappe.log_error(
+                "production center notify --> ", f"{self.name} -- {self.orders_count_in_production_center}"
+            )
             frappe.publish_realtime(
                 self.name,
                 dict(
@@ -433,7 +436,8 @@ class RestaurantObject(Document):
 
     def get_command_data(self, entry, las_status=None, key_name="identifier"):
         short_name = self.order_short_name(entry.parent)
-        return dict(
+
+        data_dt = dict(
             identifier=entry.identifier,
             item_group=entry.item_group,
             item_code=entry.item_code,
@@ -458,6 +462,13 @@ class RestaurantObject(Document):
             ordered_time=entry.ordered_time or frappe.utils.now_datetime(),
             process_status_data=self.process_status_data(entry),
         )
+
+        frappe.log_error(
+            "get_command_data",
+            f"{entry} {data_dt}",
+        )
+
+        return data_dt
 
     def process_status_data(self, item):
         return dict(
