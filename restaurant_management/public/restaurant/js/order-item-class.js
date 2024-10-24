@@ -594,9 +594,7 @@ function decrementQuantity(itemCode) {
 }
 
 function updateItemQuantity(itemCode, quantity) {
-  // Aquí puedes agregar la lógica para actualizar la cantidad del ítem en tu sistema
   console.log(`Actualizada la cantidad del ítem ${itemCode} a ${quantity}`);
-  // Por ejemplo, podrías hacer una llamada a una API o actualizar un objeto en memoria
 }
 
 // Función para actualizar las notas
