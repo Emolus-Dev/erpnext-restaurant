@@ -334,7 +334,7 @@ class OrderItem {
     <style>
       .item-card {
           display: flex;
-          height: 120px;
+          height: 160px; /* Aumentado para dar más espacio al textarea */
           overflow: hidden;
       }
       .item-details {
@@ -346,7 +346,7 @@ class OrderItem {
       }
       .item-image {
           width: 120px;
-          height: 120px;
+          height: 160px; /* Ajustado para mantener la proporción */
           overflow: hidden;
       }
       .item-image img {
@@ -366,10 +366,22 @@ class OrderItem {
       }
       .item-actions {
           display: flex;
+          flex-direction: column;
           justify-content: flex-start;
       }
       .btn-group .btn {
           padding: 4px 10px;
+          border: 2px solid #f3f3f3;
+      }
+      .item-notes {
+          margin-top: 5px;
+      }
+      .item-notes textarea {
+          width: 100%;
+          padding: 2px 5px;
+          font-size: 12px;
+          resize: none;
+          height: 40px; /* Ajusta esto según sea necesario */
       }
     </style>
     <div class="col-md-6 mb-3">
@@ -382,9 +394,9 @@ class OrderItem {
                             ${item.item_name}
                         </h5>
                         <p class="card-text small">${item.item_code}</p>
-                        <p class="card-text small">${item.item_name}</p>
+
                     </div>
-                    <div class="item-actions">
+                    <div class="item-actions mt-2 mb-2">
                         <div class="btn-group" role="group">
                             <button class="btn btn-sm btn-outline-secondary" onclick="decrementQuantity('${
                               item.item_code
@@ -393,6 +405,14 @@ class OrderItem {
                             <button class="btn btn-sm btn-outline-secondary" onclick="incrementQuantity('${
                               item.item_code
                             }')">+</button>
+                        </div>
+                        <div class="item-notes">
+                            <textarea
+                                placeholder="Agregar notas"
+                                id="notes-${item.item_code}"
+                                onchange="updateNotes('${item.item_code}')"
+                                class="input-with-feedback form-control"
+                            ></textarea>
                         </div>
                     </div>
                 </div>
@@ -577,4 +597,12 @@ function updateItemQuantity(itemCode, quantity) {
   // Aquí puedes agregar la lógica para actualizar la cantidad del ítem en tu sistema
   console.log(`Actualizada la cantidad del ítem ${itemCode} a ${quantity}`);
   // Por ejemplo, podrías hacer una llamada a una API o actualizar un objeto en memoria
+}
+
+// Función para actualizar las notas
+function updateNotes(itemCode) {
+  const notesInput = document.getElementById(`notes-${itemCode}`);
+  const notes = notesInput.value;
+  console.log(`Notas actualizadas para el ítem ${itemCode}: ${notes}`);
+  // Aquí puedes agregar la lógica para guardar las notas en tu sistema
 }
