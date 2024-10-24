@@ -114,7 +114,15 @@ def get_product_bundle_choices(item_code: str):
         if docs:
             doc = frappe.get_doc("Product Bundle", docs[0].name)
             if doc and len(doc.custom_choices) > 0:
-                return doc.custom_choices
+                choices_with_image = []
+                for choice in doc.custom_choices:
+                    choice_dict = choice.as_dict()
+                    # Obtener la URL de la imagen usando frappe.get_value
+                    image_url = frappe.get_value("Item", choice.item_code, "image")
+                    choice_dict["item_image"] = image_url if image_url else None
+                    choices_with_image.append(choice_dict)
+
+                return choices_with_image
 
     except frappe.DoesNotExistError:
         frappe.log_error(

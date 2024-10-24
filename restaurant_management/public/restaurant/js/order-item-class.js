@@ -290,43 +290,10 @@ class OrderItem {
   async open_choices_dialog() {
     console.log('open_choices_dialog', this.data);
 
-    let res = await this.get_product_bundle(this.data.item_code);
-    console.log('res', res);
+    let items_response = await this.get_product_bundle(this.data.item_code);
+    console.log('res', items_response);
 
-    const dummy_items = [
-      {
-        item_code: 'item_001',
-        is_customizable: true,
-        item_title: 'Pizza Margherita',
-        description: 'Delicious classic pizza with tomatoes, mozzarella, and basil.',
-        veg: true,
-        item_image: 'https://example.com/images/pizza_margherita.jpg',
-        add_in_menu: { html: () => '<button>Add to Menu</button>' },
-        price_list_rate: '$10.00',
-      },
-      {
-        item_code: 'item_002',
-        is_customizable: false,
-        item_title: 'Chicken Burger',
-        description: 'Juicy chicken burger with lettuce, tomato, and mayo.',
-        veg: false,
-        item_image: 'https://example.com/images/chicken_burger.jpg',
-        add_in_menu: { html: () => '<button>Add to Menu</button>' },
-        price_list_rate: '$8.50',
-      },
-      {
-        item_code: 'item_003',
-        is_customizable: true,
-        item_title: 'Caesar Salad',
-        description: 'Fresh Caesar salad with romaine lettuce, croutons, and Caesar dressing.',
-        veg: true,
-        item_image: 'https://example.com/images/caesar_salad.jpg',
-        add_in_menu: { html: () => '<button>Add to Menu</button>' },
-        price_list_rate: '$7.00',
-      },
-    ];
-
-    this.dialog_choices(dummy_items);
+    this.dialog_choices(items_response);
   }
 
   dialog_choices(items) {
@@ -352,6 +319,7 @@ class OrderItem {
           fieldtype: 'HTML',
         },
       ],
+      size: 'large',
     });
 
     // Generar el HTML para los items en dos columnas
@@ -363,44 +331,81 @@ class OrderItem {
 
   generate_item_html(item) {
     return `
-        <div class="col-md-6">
-            <div
-              class="small-box item item-code"
-              item-code="${item.item_code}" is-customizable=${
-      item.is_customizable
-    } style="border-radius: 5px 20px 25px; width: 100%;">
-                <div class="inner" style="position: inherit; z-index: 100">
-                    <h4 class="title">
-                        <i class="fa fa-circle" style="color: var(--${item.veg ? 'success' : 'danger'})"></i>
-                        ${item.item_title}
-                    </h4>
-                    <p> ${item.description}</p>
+    <style>
+      .item-card {
+          display: flex;
+          height: 120px;
+          overflow: hidden;
+      }
+      .item-details {
+          flex: 1;
+          padding: 10px;
+          display: flex;
+          flex-direction: column;
+          justify-content: space-between;
+      }
+      .item-image {
+          width: 120px;
+          height: 120px;
+          overflow: hidden;
+      }
+      .item-image img {
+          object-fit: cover;
+          width: 100%;
+          height: 100%;
+      }
+      .no-image {
+          font-size: 30px;
+          color: var(--gray);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          height: 100%;
+          width: 100%;
+          background-color: #f8f9fa;
+      }
+      .item-actions {
+          display: flex;
+          justify-content: flex-start;
+      }
+      .btn-group .btn {
+          padding: 4px 10px;
+      }
+    </style>
+    <div class="col-md-6 mb-3">
+        <div class="card item item-code" item-code="${item.item_code}" is-customizable="true">
+            <div class="item-card">
+                <div class="item-details">
+                    <div>
+                        <h5 class="card-title mb-1">
+                            <i class="fa fa-circle mr-1" style="color: var(--${item.veg ? 'success' : 'danger'})"></i>
+                            ${item.item_name}
+                        </h5>
+                        <p class="card-text small">${item.item_code}</p>
+                        <p class="card-text small">${item.item_name}</p>
+                    </div>
+                    <div class="item-actions">
+                        <div class="btn-group" role="group">
+                            <button class="btn btn-sm btn-outline-secondary" onclick="decrementQuantity('${
+                              item.item_code
+                            }')">-</button>
+                            <span class="btn btn-sm btn-outline-secondary" id="quantity-${item.item_code}">0</span>
+                            <button class="btn btn-sm btn-outline-secondary" onclick="incrementQuantity('${
+                              item.item_code
+                            }')">+</button>
+                        </div>
+                    </div>
                 </div>
-                <div class="icon bg-transparent" style="border-radius: 20px;">
+                <div class="item-image">
                     ${
                       item.item_image
-                        ? `<img src="${item.item_image}" alt="${item.item_title}" loading="lazy" decoding="async"></img>`
-                        : `<span class="no-image placeholder-text" style="font-size: 40px; color:var(--gray);"> ${frappe.get_abbr(
-                            item.item_title
-                          )}</span>`
+                        ? `<img src="${item.item_image}" alt="${item.item_name}" loading="lazy" decoding="async">`
+                        : `<div class="no-image">${frappe.get_abbr(item.item_name)}</div>`
                     }
                 </div>
-                <div class="small-box-footer" style="padding:3px; background-color: transparent;">
-                    <div class="form-group" style="position: absolute;">
-                        <button class="btn btn-secondary" onclick="decrementQuantity_Modal('${
-                          item.item_code
-                        }')">-</button>
-                        <span id="quantity-${item.item_code}">0</span>
-                        <button class="btn btn-secondary" onclick="incrementQuantity_Modal('${
-                          item.item_code
-                        }')">+</button>
-                    </div>
-                    <a class="btn btn-secondary" style="float:right; border-radius:50px;">
-                        ${item.price_list_rate}
-                    </a>
-                </div>
             </div>
-        </div>`;
+        </div>
+    </div>`;
   }
 
   async get_product_bundle(item_code) {
@@ -549,16 +554,27 @@ class OrderItemEditor extends DeskForm {
   }
 }
 
-function incrementQuantity_Modal(item_code) {
-  let quantityElement = document.getElementById(`quantity-${item_code}`);
-  let currentQuantity = parseInt(quantityElement.innerText);
-  quantityElement.innerText = currentQuantity + 1;
+// Funciones para incrementar y decrementar la cantidad
+function incrementQuantity(itemCode) {
+  const quantityElement = document.getElementById(`quantity-${itemCode}`);
+  let quantity = parseInt(quantityElement.textContent);
+  quantity++;
+  quantityElement.textContent = quantity;
+  updateItemQuantity(itemCode, quantity);
 }
 
-function decrementQuantity_Modal(item_code) {
-  let quantityElement = document.getElementById(`quantity-${item_code}`);
-  let currentQuantity = parseInt(quantityElement.innerText);
-  if (currentQuantity > 0) {
-    quantityElement.innerText = currentQuantity - 1;
+function decrementQuantity(itemCode) {
+  const quantityElement = document.getElementById(`quantity-${itemCode}`);
+  let quantity = parseInt(quantityElement.textContent);
+  if (quantity > 0) {
+    quantity--;
+    quantityElement.textContent = quantity;
+    updateItemQuantity(itemCode, quantity);
   }
+}
+
+function updateItemQuantity(itemCode, quantity) {
+  // Aquí puedes agregar la lógica para actualizar la cantidad del ítem en tu sistema
+  console.log(`Actualizada la cantidad del ítem ${itemCode} a ${quantity}`);
+  // Por ejemplo, podrías hacer una llamada a una API o actualizar un objeto en memoria
 }
