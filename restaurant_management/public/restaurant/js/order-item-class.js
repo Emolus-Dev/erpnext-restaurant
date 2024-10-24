@@ -116,6 +116,9 @@ class OrderItem {
       return acc;
     }, {});
 
+    // Asegúrate de que las notas se actualicen en la interfaz
+    this.notes.val(this.data.notes);
+
     frappeHelper.api.call({
       model: 'Table Order',
       name: this.order.data.name,
@@ -297,7 +300,14 @@ class OrderItem {
   }
 
   dialog_choices(items) {
-    let new_dialog = new frappe.ui.Dialog({
+    if (this.current_dialog) {
+      this.current_dialog.hide();
+      this.current_dialog = null;
+    }
+
+    this.quantities = {};
+
+    const dialog = new frappe.ui.Dialog({
       title: `${this.data.item_code} - ${this.data.item_name}`,
       fields: [
         {
@@ -306,116 +316,225 @@ class OrderItem {
         },
       ],
       size: 'large',
+      static: true,
+      primary_action_label: __('Save'),
+      primary_action: () => {
+        this.saveDialogData(items, dialog);
+      },
+      secondary_action_label: __('Cancel'),
+      secondary_action: () => {
+        dialog.hide();
+      },
     });
 
-    // Generar el HTML para los items en dos columnas
-    let html_content = `<div class="row">${items.map((item) => this.generate_item_html(item)).join('')}</div>`;
-    new_dialog.fields_dict.html_container.$wrapper.html(html_content);
+    this.current_dialog = dialog;
 
-    new_dialog.show();
-  }
-
-  generate_item_html(item) {
-    return `
-    <style>
-      .item-card {
+    // Insertar estilos y contenido HTML
+    const dialogContent = `
+      <style>
+        .choices-dialog .item-card {
           display: flex;
           height: 160px;
           overflow: hidden;
-      }
-      .item-details {
+          border: 1px solid #e0e0e0;
+          border-radius: 8px;
+          margin-bottom: 15px;
+          background: white;
+        }
+        .choices-dialog .item-details {
           flex: 1;
           padding: 10px;
           display: flex;
           flex-direction: column;
           justify-content: space-between;
-      }
-      .item-image {
+        }
+        .choices-dialog .item-image {
           width: 120px;
           height: 160px;
           overflow: hidden;
-          border-top-right-radius: 0.75rem;
-          border-bottom-right-radius: 0.75rem;
-      }
-      .item-image img {
+        }
+        .choices-dialog .item-image img {
           object-fit: cover;
           width: 100%;
           height: 100%;
-          border-top-right-radius: 0.75rem;
-          border-bottom-right-radius: 0.75rem;
-      }
-      .no-image {
+        }
+        .choices-dialog .no-image {
           font-size: 30px;
-          color: var(--gray);
+          color: var(--gray-500);
           display: flex;
           align-items: center;
           justify-content: center;
           height: 100%;
           width: 100%;
           background-color: #f8f9fa;
-          border-top-right-radius: 0.75rem;
-          border-bottom-right-radius: 0.75rem;
-      }
-      .item-actions {
+        }
+        .choices-dialog .item-actions {
           display: flex;
           flex-direction: column;
           justify-content: flex-start;
-      }
-      .btn-group .btn {
+        }
+        .choices-dialog .btn-group {
+          display: flex;
+          justify-content: flex-start;
+          margin-bottom: 5px;
+          gap: 0;
+        }
+        .choices-dialog .btn-group .btn {
           padding: 4px 10px;
-          border: 2px solid #f3f3f3;
-      }
-      .item-notes {
+          border: 1px solid #ced4da;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          min-width: 36px;
+        }
+        .choices-dialog .btn-group .quantity-display {
+          min-width: 50px;
+          justify-content: center;
+          display: flex;
+          align-items: center;
+          user-select: none;
+        }
+        .choices-dialog .item-notes {
           margin-top: 5px;
-      }
-      .item-notes textarea {
+        }
+        .choices-dialog .item-notes textarea {
           width: 100%;
           padding: 2px 5px;
           font-size: 12px;
           resize: none;
           height: 40px;
-      }
-    </style>
-    <div class="col-md-6 mb-3">
-        <div class="card item item-code" item-code="${item.item_code}" is-customizable="true">
-            <div class="item-card">
-                <div class="item-details">
-                    <div>
-                        <h5 class="card-title mb-1">
-                            <i class="fa fa-circle mr-1" style="color: var(--${item.veg ? 'success' : 'danger'})"></i>
-                            ${item.item_name}
-                        </h5>
-                        <p class="card-text small">${item.item_code}</p>
-                    </div>
-                    <div class="item-actions mt-2 mb-2">
-                        <div class="btn-group" role="group">
-                            <button class="btn btn-sm btn-outline-secondary" onclick="decrementQuantity('${
-                              item.item_code
-                            }')">-</button>
-                            <span class="btn btn-sm btn-outline-secondary" id="quantity-${item.item_code}">0</span>
-                            <button class="btn btn-sm btn-outline-secondary" onclick="incrementQuantity('${
-                              item.item_code
-                            }')">+</button>
-                        </div>
-                        <div class="item-notes">
-                            <textarea
-                                placeholder="Agregar notas"
-                                id="notes-${item.item_code}"
-                                onchange="updateNotes('${item.item_code}')"
-                                class="input-with-feedback form-control"
-                            ></textarea>
-                        </div>
-                    </div>
-                </div>
-                <div class="item-image">
-                    ${
-                      item.item_image
-                        ? `<img src="${item.item_image}" alt="${item.item_name}" loading="lazy" decoding="async">`
-                        : `<div class="no-image">${frappe.get_abbr(item.item_name)}</div>`
-                    }
-                </div>
-            </div>
+          border: 1px solid #ced4da;
+          border-radius: 4px;
+        }
+        .choices-dialog .card-title {
+          font-size: 14px;
+          margin-bottom: 5px;
+          font-weight: 500;
+          display: flex;
+          align-items: center;
+          gap: 5px;
+        }
+        .choices-dialog .card-text {
+          font-size: 12px;
+          color: #6c757d;
+          margin: 0;
+        }
+        .choices-dialog .btn-outline-secondary {
+          background-color: white;
+        }
+        .choices-dialog .btn-outline-secondary:hover {
+          background-color: #f8f9fa;
+        }
+      </style>
+      <div class="choices-dialog">
+        <div class="row">
+          ${items.map((item) => this.generate_item_html(item)).join('')}
         </div>
+      </div>
+    `;
+
+    dialog.fields_dict.html_container.$wrapper.empty().html(dialogContent);
+    this.setupDialogEvents(dialog);
+
+    items.forEach((item) => {
+      this.quantities[item.item_code] = 0;
+      this.updateQuantityDisplay(item.item_code);
+    });
+
+    dialog.show();
+  }
+
+  setupDialogEvents(dialog) {
+    const wrapper = dialog.fields_dict.html_container.$wrapper;
+
+    // Remover eventos anteriores si existen
+    wrapper.off('click.itemActions');
+
+    // Usar un solo delegado de eventos para todos los clics
+    wrapper.on('click.itemActions', (e) => {
+      const target = $(e.target);
+
+      if (target.hasClass('increment-btn') || target.closest('.increment-btn').length) {
+        const itemCode = target.closest('[data-item-code]').data('item-code');
+        this.quantities[itemCode] = (this.quantities[itemCode] || 0) + 1;
+        this.updateQuantityDisplay(itemCode);
+      }
+
+      if (target.hasClass('decrement-btn') || target.closest('.decrement-btn').length) {
+        const itemCode = target.closest('[data-item-code]').data('item-code');
+        if (this.quantities[itemCode] > 0) {
+          this.quantities[itemCode]--;
+          this.updateQuantityDisplay(itemCode);
+        }
+      }
+    });
+  }
+
+  saveDialogData(items, dialog) {
+    const notes = [];
+
+    items.forEach((item) => {
+      const quantity = this.quantities[item.item_code] || 0;
+      const notesElement = dialog.fields_dict.html_container.$wrapper.find(`#notes-${item.item_code}`);
+      const itemNotes = notesElement.val()?.trim() || '';
+
+      if (quantity > 0) {
+        let noteText = `${item.item_name}: ${quantity}`;
+        if (itemNotes) {
+          noteText += ` (${itemNotes})`;
+        }
+        notes.push(noteText);
+      }
+    });
+
+    this.data.notes = notes.join(', ');
+    this.update();
+    dialog.hide();
+  }
+
+  updateQuantityDisplay(itemCode) {
+    const quantityElement = this.current_dialog?.fields_dict.html_container.$wrapper.find(`#quantity-${itemCode}`);
+
+    if (quantityElement?.length) {
+      quantityElement.text(this.quantities[itemCode] || 0);
+    }
+  }
+
+  generate_item_html(item) {
+    return `
+    <div class="col-md-6 mb-3">
+      <div class="item-card" data-item-code="${item.item_code}">
+        <div class="item-details">
+          <div>
+            <h5 class="card-title">
+              <i class="fa fa-circle" style="color: var(--${item.veg ? 'success' : 'danger'}); font-size: 10px;"></i>
+              ${item.item_name}
+            </h5>
+            <p class="card-text">${item.item_code}</p>
+          </div>
+          <div class="item-actions">
+            <div class="btn-group" role="group">
+              <button class="btn btn-sm btn-outline-secondary decrement-btn" type="button">-</button>
+              <span class="btn btn-sm btn-outline-secondary quantity-display" id="quantity-${item.item_code}">0</span>
+              <button class="btn btn-sm btn-outline-secondary increment-btn" type="button">+</button>
+            </div>
+            <div class="item-notes">
+              <textarea
+                placeholder="Agregar notas"
+                id="notes-${item.item_code}"
+                class="input-with-feedback form-control"
+              ></textarea>
+            </div>
+          </div>
+        </div>
+        <div class="item-image">
+          ${
+            item.item_image
+              ? `<img src="${item.item_image}" alt="${item.item_name}" loading="lazy" decoding="async">`
+              : `<div class="no-image">${frappe.get_abbr(item.item_name)}</div>`
+          }
+        </div>
+      </div>
     </div>`;
   }
 
@@ -563,29 +682,6 @@ class OrderItemEditor extends DeskForm {
   on_refresh_dependency() {
     this.order_item.check_status();
   }
-}
-
-// Funciones para incrementar y decrementar la cantidad
-function incrementQuantity(itemCode) {
-  const quantityElement = document.getElementById(`quantity-${itemCode}`);
-  let quantity = parseInt(quantityElement.textContent);
-  quantity++;
-  quantityElement.textContent = quantity;
-  updateItemQuantity(itemCode, quantity);
-}
-
-function decrementQuantity(itemCode) {
-  const quantityElement = document.getElementById(`quantity-${itemCode}`);
-  let quantity = parseInt(quantityElement.textContent);
-  if (quantity > 0) {
-    quantity--;
-    quantityElement.textContent = quantity;
-    updateItemQuantity(itemCode, quantity);
-  }
-}
-
-function updateItemQuantity(itemCode, quantity) {
-  console.log(`Actualizada la cantidad del ítem ${itemCode} a ${quantity}`);
 }
 
 // Función para actualizar las notas
