@@ -298,22 +298,8 @@ class OrderItem {
 
   dialog_choices(items) {
     let new_dialog = new frappe.ui.Dialog({
-      title: 'Choices',
+      title: `${this.data.item_code} - ${this.data.item_name}`,
       fields: [
-        {
-          fieldname: 'item_code',
-          fieldtype: 'Link',
-          options: 'Item',
-          label: 'Item',
-        },
-        {
-          fieldname: 'item_name',
-          fieldtype: 'Data',
-          label: 'Item Name',
-        },
-        {
-          fieldtype: 'Section Break',
-        },
         {
           fieldname: 'html_container',
           fieldtype: 'HTML',
@@ -334,7 +320,7 @@ class OrderItem {
     <style>
       .item-card {
           display: flex;
-          height: 160px; /* Aumentado para dar más espacio al textarea */
+          height: 160px;
           overflow: hidden;
       }
       .item-details {
@@ -346,13 +332,17 @@ class OrderItem {
       }
       .item-image {
           width: 120px;
-          height: 160px; /* Ajustado para mantener la proporción */
+          height: 160px;
           overflow: hidden;
+          border-top-right-radius: 0.75rem;
+          border-bottom-right-radius: 0.75rem;
       }
       .item-image img {
           object-fit: cover;
           width: 100%;
           height: 100%;
+          border-top-right-radius: 0.75rem;
+          border-bottom-right-radius: 0.75rem;
       }
       .no-image {
           font-size: 30px;
@@ -363,6 +353,8 @@ class OrderItem {
           height: 100%;
           width: 100%;
           background-color: #f8f9fa;
+          border-top-right-radius: 0.75rem;
+          border-bottom-right-radius: 0.75rem;
       }
       .item-actions {
           display: flex;
@@ -381,7 +373,7 @@ class OrderItem {
           padding: 2px 5px;
           font-size: 12px;
           resize: none;
-          height: 40px; /* Ajusta esto según sea necesario */
+          height: 40px;
       }
     </style>
     <div class="col-md-6 mb-3">
@@ -394,7 +386,6 @@ class OrderItem {
                             ${item.item_name}
                         </h5>
                         <p class="card-text small">${item.item_code}</p>
-
                     </div>
                     <div class="item-actions mt-2 mb-2">
                         <div class="btn-group" role="group">
