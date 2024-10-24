@@ -147,16 +147,16 @@ def validate_max_choices(item_code: str, max_choices: int):
         if docs:
             doc = frappe.get_doc("Product Bundle", docs[0].name)
             if doc and len(doc.custom_choices) > 0:
-                if len(doc.custom_choices) > max_choices and doc.custom_max_choices > max_choices:
+                if max_choices > doc.custom_max_choices:
                     return {
                         "status": "error",
-                        "message": f"El número máximo de opciones permitidas es {max_choices}",
+                        "message": f"1. El número máximo de opciones permitidas es {doc.custom_max_choices} -- {max_choices}",
                     }
 
                 else:
                     return {
                         "status": "success",
-                        "message": f"El número de opciones permitidas es {max_choices}",
+                        "message": f"2. El número de opciones permitidas es {doc.custom_max_choices} -- {max_choices}",
                     }
 
     except frappe.DoesNotExistError:
@@ -167,5 +167,5 @@ def validate_max_choices(item_code: str, max_choices: int):
 
     return {
         "status": "error",
-        "message": "No se encontró la configuración de Product Bundle",
+        "message": "3. No se encontró la configuración de Product Bundle",
     }

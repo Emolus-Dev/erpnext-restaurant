@@ -9,6 +9,9 @@ class OrderItem {
   constructor(options) {
     Object.assign(this, options);
 
+    this.totalChoices = 0;
+    this.maxChoices = 0;
+
     this.attending_status = this.order.data.attending_status;
     this.status_enabled_for_edit = [this.attending_status, 'Pending', null, undefined, ''];
     this.status_enabled_for_delete = [this.attending_status, 'Pending', 'Sent', null, undefined, ''];
@@ -328,6 +331,10 @@ class OrderItem {
     });
 
     this.current_dialog = dialog;
+    this.maxChoices = items[0].custom_max_choices || 0;
+
+    // Ocultar el botón "Guardar" inicialmente
+    dialog.get_primary_btn().addClass('hide');
 
     // Insertar estilos y contenido HTML
     const dialogContent = `
@@ -441,6 +448,7 @@ class OrderItem {
       this.updateQuantityDisplay(item.item_code);
     });
 
+    this.updateTotalChoices();
     dialog.show();
   }
 
@@ -448,23 +456,44 @@ class OrderItem {
     const wrapper = dialog.fields_dict.html_container.$wrapper;
 
     // Remover eventos anteriores si existen
-    wrapper.off('click.itemActions');
+    // wrapper.off('click.itemActions');
 
-    // Usar un solo delegado de eventos para todos los clics
-    wrapper.on('click.itemActions', (e) => {
+    // // Usar un solo delegado de eventos para todos los clics
+    // wrapper.on('click.itemActions', (e) => {
+    //   const target = $(e.target);
+
+    //   if (target.hasClass('increment-btn') || target.closest('.increment-btn').length) {
+    //     const itemCode = target.closest('[data-item-code]').data('item-code');
+    //     this.quantities[itemCode] = (this.quantities[itemCode] || 0) + 1;
+    //     this.updateQuantityDisplay(itemCode);
+    //   }
+
+    //   if (target.hasClass('decrement-btn') || target.closest('.decrement-btn').length) {
+    //     const itemCode = target.closest('[data-item-code]').data('item-code');
+    //     if (this.quantities[itemCode] > 0) {
+    //       this.quantities[itemCode]--;
+    //       this.updateQuantityDisplay(itemCode);
+    //     }
+    //   }
+    // });
+
+    wrapper.on('click.itemActions', async (e) => {
       const target = $(e.target);
+      let itemCode;
 
       if (target.hasClass('increment-btn') || target.closest('.increment-btn').length) {
-        const itemCode = target.closest('[data-item-code]').data('item-code');
+        itemCode = target.closest('[data-item-code]').data('item-code');
         this.quantities[itemCode] = (this.quantities[itemCode] || 0) + 1;
         this.updateQuantityDisplay(itemCode);
+        await this.updateTotalChoices();
       }
 
       if (target.hasClass('decrement-btn') || target.closest('.decrement-btn').length) {
-        const itemCode = target.closest('[data-item-code]').data('item-code');
+        itemCode = target.closest('[data-item-code]').data('item-code');
         if (this.quantities[itemCode] > 0) {
           this.quantities[itemCode]--;
           this.updateQuantityDisplay(itemCode);
+          await this.updateTotalChoices();
         }
       }
     });
@@ -545,6 +574,64 @@ class OrderItem {
     });
 
     return message;
+  }
+
+  async validateChoices() {
+    const { message } = await frappe.call({
+      method: 'restaurant_management.api.validate_max_choices',
+      args: {
+        item_code: this.data.item_code,
+        max_choices: this.totalChoices,
+      },
+    });
+
+    console.log('message', message);
+
+    if (message.status === 'error') {
+      // Si el error es debido a que no se encontró la configuración, manejarlo de manera diferente
+      if (message.message === 'No se encontró la configuración de Product Bundle') {
+        frappe.msgprint(__('Error: No se encontró la configuración de Product Bundle'));
+        return { isValid: false, message: message.message };
+      }
+      // Para otros errores (como exceder el máximo), retornar como antes
+      return { isValid: false, message: message.message };
+    }
+
+    // Si todo está bien, retornar éxito
+    return { isValid: true, message: message.message };
+  }
+
+  async updateTotalChoices() {
+    this.totalChoices = Object.values(this.quantities).reduce((sum, qty) => sum + qty, 0);
+    const { isValid, message } = await this.validateChoices();
+
+    if (this.current_dialog) {
+      const saveButton = this.current_dialog.get_primary_btn();
+      if (isValid) {
+        saveButton.removeClass('hide');
+        // No mostraremos alerta para el caso de éxito
+      } else {
+        saveButton.addClass('hide');
+        // Mostrar alerta solo cuando se supera el máximo permitido
+        frappe.show_alert({
+          message: __(message),
+          indicator: 'red',
+        });
+      }
+    }
+  }
+
+  async updateSaveButtonVisibility() {
+    const isValid = await this.validateChoices();
+    if (this.current_dialog) {
+      const saveButton = this.current_dialog.get_primary_btn();
+      if (isValid) {
+        saveButton.removeClass('hide');
+      } else {
+        saveButton.addClass('hide');
+        frappe.throw(__(`You can select a maximum of ${this.maxChoices} items.`));
+      }
+    }
   }
 
   async make_form_editor() {
