@@ -117,7 +117,7 @@ def get_product_bundle_choices(item_code: str):
                 choices_with_image = []
                 for choice in doc.custom_choices:
                     choice_dict = choice.as_dict()
-                    # Obtener la URL de la imagen usando frappe.get_value
+
                     image_url = frappe.get_value("Item", choice.item_code, "image")
                     choice_dict["item_image"] = image_url if image_url else None
                     choices_with_image.append(choice_dict)
@@ -131,3 +131,41 @@ def get_product_bundle_choices(item_code: str):
         )
 
     return []
+
+
+@frappe.whitelist()
+def validate_max_choices(item_code: str, max_choices: int):
+    try:
+        filters = {
+            "disabled": 0,
+            "new_item_code": item_code,
+            "custom_max_choices": [">=", 2],
+        }
+
+        docs = frappe.get_all("Product Bundle", filters=filters, fields=["name"])
+
+        if docs:
+            doc = frappe.get_doc("Product Bundle", docs[0].name)
+            if doc and len(doc.custom_choices) > 0:
+                if len(doc.custom_choices) > max_choices and doc.custom_max_choices > max_choices:
+                    return {
+                        "status": "error",
+                        "message": f"El número máximo de opciones permitidas es {max_choices}",
+                    }
+
+                else:
+                    return {
+                        "status": "success",
+                        "message": f"El número de opciones permitidas es {max_choices}",
+                    }
+
+    except frappe.DoesNotExistError:
+        frappe.log_error(
+            "validate_max_choices",
+            f"Product Bundle Settings not found for filters: {filters}",
+        )
+
+    return {
+        "status": "error",
+        "message": "No se encontró la configuración de Product Bundle",
+    }
