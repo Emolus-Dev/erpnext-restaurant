@@ -2,7 +2,7 @@
 from __future__ import unicode_literals
 
 from . import __version__ as app_version
-from .fixtures import get_assets
+from .fixtures import get_assets, get_custom_fields
 
 app_name = "restaurant_management"
 app_title = "Restaurant"
@@ -13,6 +13,8 @@ app_color = "grey"
 app_email = "qubitcore.io@gmail.com"
 app_license = "MIT"
 source_link = "https://github.com/alphabit-technology/erpnext-restaurant"
+
+fixtures = get_custom_fields()
 
 doc_events = {
     "POS Profile": {
