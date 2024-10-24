@@ -280,6 +280,11 @@ class OrderItem {
         RM.pull_alert('left');
         this.make_form_editor();
         this.select();
+      })
+      .on('dblclick', () => {
+        RM.pull_alert('left');
+        this.make_form_editor();
+        this.select();
         this.open_choices_dialog();
       });
 
@@ -582,6 +587,7 @@ class OrderItem {
       args: {
         item_code: this.data.item_code,
         max_choices: this.totalChoices,
+        qty_items: this.data.qty,
       },
     });
 

@@ -134,7 +134,7 @@ def get_product_bundle_choices(item_code: str):
 
 
 @frappe.whitelist()
-def validate_max_choices(item_code: str, max_choices: int):
+def validate_max_choices(item_code: str, max_choices: int, qty_items: int):
     try:
         filters = {
             "disabled": 0,
@@ -147,16 +147,17 @@ def validate_max_choices(item_code: str, max_choices: int):
         if docs:
             doc = frappe.get_doc("Product Bundle", docs[0].name)
             if doc and len(doc.custom_choices) > 0:
-                if max_choices > doc.custom_max_choices:
+                total_allowed_choices = doc.custom_max_choices * int(qty_items)
+
+                if int(max_choices) > total_allowed_choices:
                     return {
                         "status": "error",
-                        "message": f"1. El número máximo de opciones permitidas es {doc.custom_max_choices} -- {max_choices}",
+                        "message": f"El número máximo de opciones para cada {item_code} permitidas es {doc.custom_max_choices} ",
                     }
-
                 else:
                     return {
                         "status": "success",
-                        "message": f"2. El número de opciones permitidas es {doc.custom_max_choices} -- {max_choices}",
+                        "message": f"Selección válida. Has elegido {max_choices} de {total_allowed_choices} opciones permitidas",
                     }
 
     except frappe.DoesNotExistError:
@@ -167,5 +168,5 @@ def validate_max_choices(item_code: str, max_choices: int):
 
     return {
         "status": "error",
-        "message": "3. No se encontró la configuración de Product Bundle",
+        "message": "No se encontró la configuración de Product Bundle",
     }
