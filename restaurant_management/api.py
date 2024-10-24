@@ -11,6 +11,7 @@ import frappe
 
 from frappe import _
 
+
 @frappe.whitelist()
 def call(model, name, method, args=None):
     doc = frappe.get_doc(model, name)
@@ -89,13 +90,36 @@ def new_items_in_order(doc, event):
 
 @frappe.whitelist()
 def change_order_item_to_sent(item_name):
-    order_item = frappe.get_doc('Order Entry Item', item_name)
+    order_item = frappe.get_doc("Order Entry Item", item_name)
     order_item.status = "Completed"
     order_item.save()
 
 
 @frappe.whitelist()
 def get_menu_items(item_group):
-    return frappe.db.get_all('Item',
-                             filters={'item_group': item_group},
-                             fields=['name', 'item_name', 'item_group'])
+    return frappe.db.get_all("Item", filters={"item_group": item_group}, fields=["name", "item_name", "item_group"])
+
+
+@frappe.whitelist()
+def get_product_bundle_choices(item_code: str):
+    try:
+        filters = {
+            "disabled": 0,
+            "new_item_code": item_code,
+            "custom_max_choices": [">=", 2],
+        }
+
+        docs = frappe.get_all("Product Bundle", filters=filters, fields=["name"])
+
+        if docs:
+            doc = frappe.get_doc("Product Bundle", docs[0].name)
+            if doc and len(doc.custom_choices) > 0:
+                return doc.custom_choices
+
+    except frappe.DoesNotExistError:
+        frappe.log_error(
+            "get_product_bundle_choices",
+            f"Product Bundle Settings not found for filters: {filters}",
+        )
+
+    return []

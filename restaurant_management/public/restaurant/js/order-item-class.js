@@ -287,8 +287,11 @@ class OrderItem {
       `;
   }
 
-  open_choices_dialog() {
+  async open_choices_dialog() {
     console.log('open_choices_dialog', this.data);
+
+    let res = await this.get_product_bundle(this.data.item_code);
+    console.log('res', res);
 
     const dummy_items = [
       {
@@ -384,7 +387,13 @@ class OrderItem {
                 </div>
                 <div class="small-box-footer" style="padding:3px; background-color: transparent;">
                     <div class="form-group" style="position: absolute;">
-                        ${item.add_in_menu.html()}
+                        <button class="btn btn-secondary" onclick="decrementQuantity_Modal('${
+                          item.item_code
+                        }')">-</button>
+                        <span id="quantity-${item.item_code}">0</span>
+                        <button class="btn btn-secondary" onclick="incrementQuantity_Modal('${
+                          item.item_code
+                        }')">+</button>
                     </div>
                     <a class="btn btn-secondary" style="float:right; border-radius:50px;">
                         ${item.price_list_rate}
@@ -392,6 +401,15 @@ class OrderItem {
                 </div>
             </div>
         </div>`;
+  }
+
+  async get_product_bundle(item_code) {
+    const { message } = await frappe.call({
+      method: 'restaurant_management.api.get_product_bundle_choices',
+      args: { item_code },
+    });
+
+    return message;
   }
 
   async make_form_editor() {
@@ -528,5 +546,19 @@ class OrderItemEditor extends DeskForm {
 
   on_refresh_dependency() {
     this.order_item.check_status();
+  }
+}
+
+function incrementQuantity_Modal(item_code) {
+  let quantityElement = document.getElementById(`quantity-${item_code}`);
+  let currentQuantity = parseInt(quantityElement.innerText);
+  quantityElement.innerText = currentQuantity + 1;
+}
+
+function decrementQuantity_Modal(item_code) {
+  let quantityElement = document.getElementById(`quantity-${item_code}`);
+  let currentQuantity = parseInt(quantityElement.innerText);
+  if (currentQuantity > 0) {
+    quantityElement.innerText = currentQuantity - 1;
   }
 }
