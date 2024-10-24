@@ -14,6 +14,7 @@
   {
    "fieldname": "item_code",
    "fieldtype": "Link",
+   "in_list_view": 1,
    "label": "Item",
    "options": "Item"
   },
@@ -21,6 +22,7 @@
    "fetch_from": "item_code.item_name",
    "fieldname": "item_name",
    "fieldtype": "Data",
+   "in_list_view": 1,
    "label": "Item Name",
    "read_only": 1
   },
@@ -35,7 +37,7 @@
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2024-10-24 11:35:55.261321",
+ "modified": "2024-10-24 14:01:02.180272",
  "modified_by": "Administrator",
  "module": "Restaurant Management",
  "name": "Product Bundle Choice",

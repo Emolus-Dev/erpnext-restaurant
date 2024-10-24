@@ -274,6 +274,7 @@ class OrderItem {
         RM.pull_alert('left');
         this.make_form_editor();
         this.select();
+        this.open_choices_dialog();
       });
 
     return `
@@ -284,6 +285,113 @@ class OrderItem {
         </div>
       </div>
       `;
+  }
+
+  open_choices_dialog() {
+    console.log('open_choices_dialog', this.data);
+
+    const dummy_items = [
+      {
+        item_code: 'item_001',
+        is_customizable: true,
+        item_title: 'Pizza Margherita',
+        description: 'Delicious classic pizza with tomatoes, mozzarella, and basil.',
+        veg: true,
+        item_image: 'https://example.com/images/pizza_margherita.jpg',
+        add_in_menu: { html: () => '<button>Add to Menu</button>' },
+        price_list_rate: '$10.00',
+      },
+      {
+        item_code: 'item_002',
+        is_customizable: false,
+        item_title: 'Chicken Burger',
+        description: 'Juicy chicken burger with lettuce, tomato, and mayo.',
+        veg: false,
+        item_image: 'https://example.com/images/chicken_burger.jpg',
+        add_in_menu: { html: () => '<button>Add to Menu</button>' },
+        price_list_rate: '$8.50',
+      },
+      {
+        item_code: 'item_003',
+        is_customizable: true,
+        item_title: 'Caesar Salad',
+        description: 'Fresh Caesar salad with romaine lettuce, croutons, and Caesar dressing.',
+        veg: true,
+        item_image: 'https://example.com/images/caesar_salad.jpg',
+        add_in_menu: { html: () => '<button>Add to Menu</button>' },
+        price_list_rate: '$7.00',
+      },
+    ];
+
+    this.dialog_choices(dummy_items);
+  }
+
+  dialog_choices(items) {
+    let new_dialog = new frappe.ui.Dialog({
+      title: 'Choices',
+      fields: [
+        {
+          fieldname: 'item_code',
+          fieldtype: 'Link',
+          options: 'Item',
+          label: 'Item',
+        },
+        {
+          fieldname: 'item_name',
+          fieldtype: 'Data',
+          label: 'Item Name',
+        },
+        {
+          fieldtype: 'Section Break',
+        },
+        {
+          fieldname: 'html_container',
+          fieldtype: 'HTML',
+        },
+      ],
+    });
+
+    // Generar el HTML para los items en dos columnas
+    let html_content = `<div class="row">${items.map((item) => this.generate_item_html(item)).join('')}</div>`;
+    new_dialog.fields_dict.html_container.$wrapper.html(html_content);
+
+    new_dialog.show();
+  }
+
+  generate_item_html(item) {
+    return `
+        <div class="col-md-6">
+            <div
+              class="small-box item item-code"
+              item-code="${item.item_code}" is-customizable=${
+      item.is_customizable
+    } style="border-radius: 5px 20px 25px; width: 100%;">
+                <div class="inner" style="position: inherit; z-index: 100">
+                    <h4 class="title">
+                        <i class="fa fa-circle" style="color: var(--${item.veg ? 'success' : 'danger'})"></i>
+                        ${item.item_title}
+                    </h4>
+                    <p> ${item.description}</p>
+                </div>
+                <div class="icon bg-transparent" style="border-radius: 20px;">
+                    ${
+                      item.item_image
+                        ? `<img src="${item.item_image}" alt="${item.item_title}" loading="lazy" decoding="async"></img>`
+                        : `<span class="no-image placeholder-text" style="font-size: 40px; color:var(--gray);"> ${frappe.get_abbr(
+                            item.item_title
+                          )}</span>`
+                    }
+                </div>
+                <div class="small-box-footer" style="padding:3px; background-color: transparent;">
+                    <div class="form-group" style="position: absolute;">
+                        ${item.add_in_menu.html()}
+                    </div>
+                    <a class="btn btn-secondary" style="float:right; border-radius:50px;">
+                        ${item.price_list_rate}
+                    </a>
+                </div>
+            </div>
+        </div>`;
   }
 
   async make_form_editor() {
