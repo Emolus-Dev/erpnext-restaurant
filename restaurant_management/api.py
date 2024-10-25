@@ -135,6 +135,17 @@ def get_product_bundle_choices(item_code: str):
 
 @frappe.whitelist()
 def validate_max_choices(item_code: str, max_choices: int, qty_items: int):
+    """
+    Validate the maximum number of choices for a product bundle.
+
+    Args:
+        item_code (str): The code of the item.
+        max_choices (int): The maximum number of choices.
+        qty_items (int): The quantity of items.
+
+    Returns:
+        dict: A dictionary with the status and message.
+    """
     try:
         filters = {
             "disabled": 0,
