@@ -8,7 +8,6 @@ import hashlib
 import json
 
 import frappe
-
 from frappe import _
 
 
@@ -102,6 +101,17 @@ def get_menu_items(item_group):
 
 @frappe.whitelist()
 def get_product_bundle_choices(item_code: str):
+    """
+    Obtiene las opciones de elección para un paquete de productos.
+
+    Args:
+        item_code (str): El código del artículo para el cual se buscan las opciones.
+
+    Returns:
+        list: Una lista de diccionarios que contienen la información de las opciones de elección.
+              Cada diccionario incluye los detalles del artículo y su imagen, si está disponible.
+              Retorna una lista vacía si no se encuentran opciones o si ocurre un error.
+    """
     try:
         filters = {
             "disabled": 0,
