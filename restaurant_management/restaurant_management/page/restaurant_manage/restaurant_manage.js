@@ -280,6 +280,21 @@ RestaurantManage = class RestaurantManage {
         this.set_edit_status();
       });
 
+    this.change_user_button = frappe
+      .jshtml({
+        tag: 'div',
+        properties: {
+          class: 'btn-default button',
+          style:
+            'display: flex; justify-content: center; align-items: center; padding-left: 10px; padding-right: 10px;',
+        },
+        content: `<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 14 14"><path fill="#dc2626" fill-rule="evenodd" d="M10.213 2.538A5.499 5.499 0 0 0 1.595 8.01a.75.75 0 0 1-1.474.277a6.999 6.999 0 0 1 11.163-6.821l.612-.612a.5.5 0 0 1 .854.353V3.5a.5.5 0 0 1-.5.5H9.957a.5.5 0 0 1-.353-.853zm2.791 2.577a.75.75 0 0 1 .876.598a6.999 6.999 0 0 1-11.164 6.821l-.612.613a.5.5 0 0 1-.854-.354V10.5a.5.5 0 0 1 .5-.5h2.293a.5.5 0 0 1 .354.854l-.61.609a5.499 5.499 0 0 0 8.618-5.472a.75.75 0 0 1 .6-.876ZM8.5 5.5a1.5 1.5 0 1 1-3 0a1.5 1.5 0 0 1 3 0M7 7.525a3 3 0 0 0-2.517 1.367c-.188.29.05.633.395.633h4.244c.345 0 .583-.343.395-.633A3 3 0 0 0 7 7.525" clip-rule="evenodd"/></svg>`,
+      })
+      .on('click', () => {
+        console.log('change user');
+        this.change_user_button_action();
+      });
+
     this.add_room_button = frappe
       .jshtml({
         tag: 'div',
@@ -333,6 +348,7 @@ RestaurantManage = class RestaurantManage {
 			<div class="restaurant-manage">
 				<div class="floor-selector">
 					${this.general_edit_button.html()}
+					${this.change_user_button.html()}
 					${this.rooms_container.html()}
 					${this.add_room_button.html()}
 					${this.setting_button.html()}
@@ -741,6 +757,330 @@ RestaurantManage = class RestaurantManage {
       } else {
         this.#components[k].show();
       }
+    });
+  }
+
+  change_user_button_action() {
+    // Primero obtenemos la lista de usuarios
+    const dummyUsers = {
+      message: [
+        {
+          name: 'administrator',
+          full_name: 'mario Joel Monroy Caniuzales 123',
+          user_image: 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp',
+        },
+        {
+          name: 'maria.garcia',
+          full_name: 'María García',
+          user_image: 'https://randomuser.me/api/portraits/women/1.jpg',
+        },
+        {
+          name: 'juan.perez',
+          full_name: 'Juan Pérez',
+          user_image: 'https://randomuser.me/api/portraits/men/1.jpg',
+        },
+        {
+          name: 'ana.martinez',
+          full_name: 'Ana Martínez',
+          user_image: null, // Este usuario no tiene imagen, mostrará inicial
+        },
+        {
+          name: 'carlos.rodriguez',
+          full_name: 'Carlos Rodríguez',
+          user_image: 'https://randomuser.me/api/portraits/men/2.jpg',
+        },
+        {
+          name: 'laura.lopez',
+          full_name: 'Laura López',
+          user_image: 'https://randomuser.me/api/portraits/women/2.jpg',
+        },
+        {
+          name: 'roberto.sanchez',
+          full_name: 'Roberto Sánchez',
+          user_image: null,
+        },
+        {
+          name: 'sofia.torres',
+          full_name: 'Sofía Torres',
+          user_image: 'https://randomuser.me/api/portraits/women/3.jpg',
+        },
+      ],
+    };
+
+    // Usamos directamente los datos dummy en lugar de hacer la llamada a frappe
+    this.show_user_selector(dummyUsers.message);
+    // frappe.call({
+    //   method: 'frappe.client.get_list',
+    //   args: {
+    //     doctype: 'User',
+    //     fields: ['name', 'full_name', 'user_image'],
+    //     filters: {
+    //       enabled: 1,
+    //       user_type: 'System User',
+    //     },
+    //   },
+    //   callback: (response) => {
+    //     if (response.message) {
+    //       this.show_user_selector(response.message);
+    //     }
+    //   },
+    // });
+  }
+
+  show_user_selector(users) {
+    // Creamos el HTML para el menú de usuarios
+    const userAvatarsHTML = `
+    <div class="user-avatar-menu">
+        <div class="menu-header">
+            <h3 class="text-lg font-bold mb-4">Cambiar Usuario</h3>
+            <button class="close-button">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+        </div>
+        <div class="avatar-list">
+            ${users
+              .map(
+                (user) => `
+                <div class="avatar-item" data-user="${user.name}">
+                    <div class="avatar-image">
+                        ${
+                          user.user_image
+                            ? `<img src="${user.user_image}" alt="${user.full_name}">`
+                            : `<div class="avatar-placeholder">${user.full_name.charAt(0)}</div>`
+                        }
+                    </div>
+                    <div class="avatar-name">${user.full_name}</div>
+                </div>
+            `
+              )
+              .join('')}
+        </div>
+    </div>
+`;
+
+    // Mostramos el menú
+    frappe.dom.freeze(userAvatarsHTML, 'freeze-screen-change-user');
+
+    // Estilizamos el contenedor
+    const freezeArea = document.querySelector('.freeze-message-container');
+    if (freezeArea) {
+      freezeArea.style.setProperty('background-color', '#FFFFFF', 'important');
+      freezeArea.style.setProperty('opacity', '1', 'important');
+      freezeArea.style.setProperty('border-radius', '8px', 'important');
+      freezeArea.style.setProperty('padding', '10px 10px', 'important');
+
+      freezeArea.style.setProperty('position', 'fixed', 'important');
+      freezeArea.style.setProperty('top', '50%', 'important');
+      freezeArea.style.setProperty('left', '50%', 'important');
+      freezeArea.style.setProperty('transform', 'translate(-50%, -50%)', 'important');
+      freezeArea.style.setProperty('max-height', '90vh', 'important');
+      freezeArea.style.setProperty('overflow-y', 'auto', 'important');
+
+      freezeArea.style.setProperty('width', 'auto', 'important');
+      freezeArea.style.setProperty('min-width', '600px', 'important');
+      freezeArea.style.setProperty('max-width', '90%', 'important');
+      freezeArea.style.setProperty('max-height', '90%', 'important');
+      freezeArea.style.setProperty('height', '40%', 'important');
+    }
+
+    const freezeContainer = document.querySelector('#freeze');
+    if (freezeContainer) {
+      freezeContainer.style.setProperty('opacity', '1', 'important');
+      freezeContainer.style.setProperty('background-color', 'rgba(15, 23, 42, 0.9)', 'important');
+      freezeContainer.style.setProperty('position', 'fixed', 'important');
+      freezeContainer.style.setProperty('top', '0', 'important');
+      freezeContainer.style.setProperty('left', '0', 'important');
+      freezeContainer.style.setProperty('right', '0', 'important');
+      freezeContainer.style.setProperty('bottom', '0', 'important');
+    }
+
+    // estilos para el cotenido
+    const style = document.createElement('style');
+    style.textContent = `
+      .user-avatar-menu {
+        text-align: center;
+        padding: 10px;
+        width: 100%;
+
+      }
+      .avatar-list {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 20px; // Aumentado el gap
+        padding: 15px 0; // Quitado padding horizontal
+        width: 100%;
+      }
+      .avatar-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        cursor: pointer;
+        padding: 10px;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+        border: 2px solid #E5E7EB;
+        width: 120px;
+        margin: 0 auto; // Centrar las cards
+      }
+      .avatar-item:hover {
+        background-color: #F3F4F6;
+        transform: translateY(-2px);
+      }
+      .avatar-image {
+        width: 70px;
+        height: 70px;
+        margin-bottom: 8px;
+      }
+      .avatar-image img, .avatar-placeholder {
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        object-fit: cover;
+      }
+      .avatar-placeholder {
+        background-color: #E5E7EB;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        color: #6B7280;
+      }
+      .avatar-name {
+        font-size: 14px;
+        color: #374151;
+        width: 100%;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 100px;
+      }
+
+      .menu-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        position: relative;
+        margin-bottom: 20px;
+    }
+
+    .close-button {
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 8px;
+        color: #6B7280;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+    }
+
+    .close-button:hover {
+        background-color: #F3F4F6;
+        color: #374151;
+    }
+
+    .close-button svg {
+        width: 20px;
+        height: 20px;
+    }
+
+      @media (max-width: 600px) {
+        .avatar-list {
+          grid-template-columns: repeat(2, 1fr); /* 2 columnas en para mobile */
+        }
+        .avatar-item {
+          width: 100px;
+        }
+        .avatar-image {
+          width: 48px;
+          height: 48px;
+        }
+        .avatar-name {
+          font-size: 12px;
+          max-width: 80px;
+        }
+      }
+    `;
+
+    document.head.appendChild(style);
+
+    const adjustContainerWidth = () => {
+      const avatarList = document.querySelector('.avatar-list');
+      const itemCount = avatarList.children.length;
+      const rows = Math.ceil(itemCount / 4);
+      const containerWidth = 580;
+
+      const freezeArea = document.querySelector('.freeze-message-container');
+      if (freezeArea) {
+        freezeArea.style.setProperty('width', `${containerWidth}px`, 'important');
+      }
+    };
+
+    adjustContainerWidth();
+    document.querySelector('.close-button').addEventListener('click', () => {
+      frappe.dom.unfreeze();
+    });
+
+    // Manejamos los clicks en los avatares
+    document.querySelectorAll('.avatar-item').forEach((avatar) => {
+      avatar.addEventListener('click', function () {
+        const userId = this.getAttribute('data-user');
+
+        console.log('userID', userId);
+
+        // frappe.prompt(
+        //   [
+        //     {
+        //       fieldname: 'reason',
+        //       fieldtype: 'Small Text',
+        //       label: 'Reason for impersonating',
+        //       description: __('Note: This will be shared with user.'),
+        //       reqd: 1,
+        //     },
+        //   ],
+        //   (values) => {
+        //     frappe
+        //       .xcall('frappe.core.doctype.user.user.impersonate', {
+        //         user: frm.doc.name,
+        //         reason: values.reason,
+        //       })
+        //       .then(() => window.location.reload());
+        //   },
+        //   __('Impersonate as {0}', [frm.doc.name]),
+        //   __('Confirm')
+        // );
+
+        // frappe.call({
+        //   method: 'frappe.core.doctype.user.user.switch_user',
+        //   args: {
+        //     user: userId,
+        //   },
+        //   callback: (r) => {
+        //     if (r.message) {
+        //       frappe.dom.unfreeze();
+        //       window.location.reload();
+        //     }
+        //   },
+        // });
+
+        // frappe.confirm(
+        //   `¿Deseas cambiar al usuario ${userId}?`,
+        //   () => {
+        //     // Realizamos el cambio de usuario
+
+        //   },
+        //   () => {
+        //     // El usuario canceló
+        //   }
+        // );
+      });
     });
   }
 
