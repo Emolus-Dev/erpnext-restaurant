@@ -861,22 +861,23 @@ RestaurantManage = class RestaurantManage {
 
     // estilos para el cotenido
     const style = document.createElement('style');
+
     style.textContent = `
       .user-avatar-menu {
         text-align: center;
         padding: 10px;
         width: 100%;
-
       }
+
       .avatar-list {
         display: grid;
         grid-template-columns: repeat(4, 1fr);
-        gap: 20px; // Aumentado el gap
-        padding: 15px 0; // Quitado padding horizontal
+        gap: 20px;
+        padding: 15px 0;
         width: 100%;
       }
 
-       .avatar-item {
+      .avatar-item {
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -889,7 +890,7 @@ RestaurantManage = class RestaurantManage {
         border: 2px solid #E5E7EB;
         width: 120px;
         margin: 0 auto;
-        background-color: #f9f9f9; // Cambiado el color de fondo
+        background-color: #f9f9f9;
       }
 
       .avatar-item:hover {
@@ -960,35 +961,73 @@ RestaurantManage = class RestaurantManage {
         height: 20px;
     }
 
-      @media (max-width: 600px) {
-        .avatar-list {
-          grid-template-columns: repeat(2, 1fr); /* 2 columnas en para mobile */
-        }
-        .avatar-item {
-          width: 100px;
-        }
-        .avatar-image {
-          width: 48px;
-          height: 48px;
-        }
-        .avatar-name {
-          font-size: 12px;
-          max-width: 80px;
-        }
-      }
+      @media (max-width: 768px) {
+    .avatar-list {
+      grid-template-columns: repeat(3, 1fr);
+      gap: 15px;
+    }
+
+    .avatar-item {
+      width: 100px;
+    }
+
+    .menu-header h3 {
+      font-size: 16px;
+    }
+  }
+
+    @media (max-width: 576px) {
+    .avatar-list {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+
+    .avatar-item {
+      width: 90px;
+      padding: 8px;
+    }
+
+    .avatar-image {
+      width: 50px;
+      height: 50px;
+    }
+
+    .avatar-name {
+      font-size: 12px;
+      max-width: 80px;
+    }
+  }
+
+  @media (max-width: 360px) {
+    .avatar-list {
+      grid-template-columns: repeat(1, 1fr);
+    }
+
+    .avatar-item {
+      width: 100%;
+      max-width: 120px;
+    }
+  }
     `;
 
     document.head.appendChild(style);
 
     const adjustContainerWidth = () => {
-      const avatarList = document.querySelector('.avatar-list');
-      const itemCount = avatarList.children.length;
-      const rows = Math.ceil(itemCount / 4);
-      const containerWidth = 580;
-
       const freezeArea = document.querySelector('.freeze-message-container');
       if (freezeArea) {
-        freezeArea.style.setProperty('width', `${containerWidth}px`, 'important');
+        if (window.innerWidth <= 576) {
+          // Mobile
+          freezeArea.style.setProperty('width', '95%', 'important');
+          freezeArea.style.setProperty('min-width', 'auto', 'important');
+        } else if (window.innerWidth <= 768) {
+          // Tablet
+          freezeArea.style.setProperty('width', '80%', 'important');
+          freezeArea.style.setProperty('min-width', '400px', 'important');
+        } else {
+          // Desktop
+          freezeArea.style.setProperty('width', '580px', 'important');
+          freezeArea.style.setProperty('min-width', '580px', 'important');
+        }
       }
     };
 
@@ -996,6 +1035,8 @@ RestaurantManage = class RestaurantManage {
     document.querySelector('.close-button').addEventListener('click', () => {
       frappe.dom.unfreeze();
     });
+
+    window.addEventListener('resize', adjustContainerWidth);
 
     // Manejamos los clicks en los avatares
     document.querySelectorAll('.avatar-item').forEach((avatar) => {
