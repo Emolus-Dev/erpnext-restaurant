@@ -765,19 +765,15 @@ RestaurantManage = class RestaurantManage {
     const dummyUsers = {
       message: [
         {
-          name: 'administrator',
-          full_name: 'mario Joel Monroy Caniuzales 123',
-          user_image: 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp',
+          name: 'mario@emolus.com',
+          full_name: 'Mario Pruebas',
+          user_image: '',
         },
         {
-          name: 'maria.garcia',
-          full_name: 'María García',
-          user_image: 'https://randomuser.me/api/portraits/women/1.jpg',
-        },
-        {
-          name: 'juan.perez',
+          name: 'cajavaka@grupolarosagt.com',
           full_name: 'Juan Pérez',
-          user_image: 'https://randomuser.me/api/portraits/men/1.jpg',
+          user_image:
+            '/api/method/frappe_s3_attachment.controller.generate_file?key=attachments/2024/10/25/User/af7f609f_Mario_Monroy_balcklogo_800x600.jpg&file_name=Mario Monroy balcklogo 800x600.jpg',
         },
         {
           name: 'ana.martinez',
@@ -787,12 +783,12 @@ RestaurantManage = class RestaurantManage {
         {
           name: 'carlos.rodriguez',
           full_name: 'Carlos Rodríguez',
-          user_image: 'https://randomuser.me/api/portraits/men/2.jpg',
+          user_image: '',
         },
         {
           name: 'laura.lopez',
           full_name: 'Laura López',
-          user_image: 'https://randomuser.me/api/portraits/women/2.jpg',
+          user_image: '',
         },
         {
           name: 'roberto.sanchez',
@@ -802,7 +798,7 @@ RestaurantManage = class RestaurantManage {
         {
           name: 'sofia.torres',
           full_name: 'Sofía Torres',
-          user_image: 'https://randomuser.me/api/portraits/women/3.jpg',
+          user_image: '',
         },
       ],
     };
@@ -848,8 +844,13 @@ RestaurantManage = class RestaurantManage {
                     <div class="avatar-image">
                         ${
                           user.user_image
-                            ? `<img src="${user.user_image}" alt="${user.full_name}">`
-                            : `<div class="avatar-placeholder">${user.full_name.charAt(0)}</div>`
+                            ? frappe.get_avatar(
+                                'avatar-large', // clases CSS
+                                user.full_name, // título
+                                user.user_image, // imagen
+                                ''
+                              )
+                            : `<div class="avatar-placeholder">${user.full_name.charAt(0)}</div>` // frappe.avatar(user.name, 'avatar-large')
                         }
                     </div>
                     <div class="avatar-name">${user.full_name}</div>
@@ -913,7 +914,8 @@ RestaurantManage = class RestaurantManage {
         padding: 15px 0; // Quitado padding horizontal
         width: 100%;
       }
-      .avatar-item {
+
+       .avatar-item {
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -925,23 +927,29 @@ RestaurantManage = class RestaurantManage {
         transition: all 0.3s ease;
         border: 2px solid #E5E7EB;
         width: 120px;
-        margin: 0 auto; // Centrar las cards
+        margin: 0 auto;
+        background-color: #f9f9f9; // Cambiado el color de fondo
       }
+
       .avatar-item:hover {
         background-color: #F3F4F6;
         transform: translateY(-2px);
       }
+
       .avatar-image {
         width: 70px;
         height: 70px;
         margin-bottom: 8px;
       }
-      .avatar-image img, .avatar-placeholder {
+
+      avatar-image img, .avatar-placeholder {
         width: 100%;
         height: 100%;
         border-radius: 50%;
         object-fit: cover;
+        border: 2px solid #E5E7EB; // Agregado el borde a las imágenes
       }
+
       .avatar-placeholder {
         background-color: #E5E7EB;
         display: flex;
