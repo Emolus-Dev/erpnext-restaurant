@@ -8,6 +8,7 @@ import hashlib
 import json
 
 import frappe
+
 from frappe import _
 
 
@@ -191,3 +192,48 @@ def validate_max_choices(item_code: str, max_choices: int, qty_items: int):
         "status": "error",
         "message": "No se encontró la configuración de Product Bundle",
     }
+
+
+@frappe.whitelist(methods=["POST"])
+def impersonate(user: str, reason: str):
+    # Note: For now we only allow admins, we MIGHT allow system manager in future.
+    # All the impersonation code doesn't assume anything about user.
+    # frappe.only_for("Administrator")
+
+    impersonator = frappe.session.user
+    frappe.get_doc(
+        {
+            "doctype": "Activity Log",
+            "user": user,
+            "status": "Success",
+            "subject": _("User {0} impersonated as {1}").format(impersonator, user),
+            "operation": "Impersonate",
+        }
+    ).insert(ignore_permissions=True, ignore_links=True)
+
+    notification = frappe.new_doc(
+        "Notification Log",
+        for_user=user,
+        from_user=frappe.session.user,
+        subject=_("{0} just impersonated as you. They gave this reason: {1}").format(impersonator, reason),
+    )
+    notification.set("type", "Alert")
+    notification.insert(ignore_permissions=True)
+    frappe.local.login_manager.impersonate(user)
+
+
+@frappe.whitelist()
+def get_users_pos_profile(pos_profile: str):
+    if not pos_profile:
+        return []
+
+    pos_doc = frappe.get_doc("POS Profile", pos_profile)
+    users_with_image = []
+
+    for user in pos_doc.applicable_for_users:
+        user_data = user.as_dict()
+        user_image = frappe.get_value("User", user.user, "user_image")
+        user_data["user_image"] = user_image if user_image else ""
+        users_with_image.append(user_data)
+
+    return users_with_image

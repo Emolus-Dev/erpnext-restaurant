@@ -760,67 +760,28 @@ RestaurantManage = class RestaurantManage {
     });
   }
 
-  change_user_button_action() {
-    // Primero obtenemos la lista de usuarios
-    const dummyUsers = {
-      message: [
-        {
-          name: 'mario@emolus.com',
-          full_name: 'Mario Pruebas',
-          user_image: '',
-        },
-        {
-          name: 'cajavaka@grupolarosagt.com',
-          full_name: 'Juan Pérez',
-          user_image:
-            '/api/method/frappe_s3_attachment.controller.generate_file?key=attachments/2024/10/25/User/af7f609f_Mario_Monroy_balcklogo_800x600.jpg&file_name=Mario Monroy balcklogo 800x600.jpg',
-        },
-        {
-          name: 'ana.martinez',
-          full_name: 'Ana Martínez',
-          user_image: null, // Este usuario no tiene imagen, mostrará inicial
-        },
-        {
-          name: 'carlos.rodriguez',
-          full_name: 'Carlos Rodríguez',
-          user_image: '',
-        },
-        {
-          name: 'laura.lopez',
-          full_name: 'Laura López',
-          user_image: '',
-        },
-        {
-          name: 'roberto.sanchez',
-          full_name: 'Roberto Sánchez',
-          user_image: null,
-        },
-        {
-          name: 'sofia.torres',
-          full_name: 'Sofía Torres',
-          user_image: '',
-        },
-      ],
-    };
+  async change_user_button_action() {
+    let users_pos = [];
 
-    // Usamos directamente los datos dummy en lugar de hacer la llamada a frappe
-    this.show_user_selector(dummyUsers.message);
-    // frappe.call({
-    //   method: 'frappe.client.get_list',
-    //   args: {
-    //     doctype: 'User',
-    //     fields: ['name', 'full_name', 'user_image'],
-    //     filters: {
-    //       enabled: 1,
-    //       user_type: 'System User',
-    //     },
-    //   },
-    //   callback: (response) => {
-    //     if (response.message) {
-    //       this.show_user_selector(response.message);
-    //     }
-    //   },
-    // });
+    try {
+      const promises = this.pos_profile.applicable_for_users.map(async (user) => {
+        const { message } = await frappe.db.get_value('User', user.user, ['full_name', 'user_image']);
+
+        return {
+          name: user.user,
+          full_name: message.full_name,
+          user_image: message.user_image,
+        };
+      });
+
+      users_pos = await Promise.all(promises);
+      console.log('users_pos', users_pos);
+
+      this.show_user_selector(users_pos);
+    } catch (error) {
+      console.error('Error fetching user data:', error);
+      frappe.throw(__('Error loading user data'));
+    }
   }
 
   show_user_selector(users) {
@@ -1043,51 +1004,16 @@ RestaurantManage = class RestaurantManage {
 
         console.log('userID', userId);
 
-        // frappe.prompt(
-        //   [
-        //     {
-        //       fieldname: 'reason',
-        //       fieldtype: 'Small Text',
-        //       label: 'Reason for impersonating',
-        //       description: __('Note: This will be shared with user.'),
-        //       reqd: 1,
-        //     },
-        //   ],
-        //   (values) => {
-        //     frappe
-        //       .xcall('frappe.core.doctype.user.user.impersonate', {
-        //         user: frm.doc.name,
-        //         reason: values.reason,
-        //       })
-        //       .then(() => window.location.reload());
-        //   },
-        //   __('Impersonate as {0}', [frm.doc.name]),
-        //   __('Confirm')
-        // );
+        if (userId === frappe.session.user) {
+          return;
+        }
 
-        // frappe.call({
-        //   method: 'frappe.core.doctype.user.user.switch_user',
-        //   args: {
-        //     user: userId,
-        //   },
-        //   callback: (r) => {
-        //     if (r.message) {
-        //       frappe.dom.unfreeze();
-        //       window.location.reload();
-        //     }
-        //   },
-        // });
-
-        // frappe.confirm(
-        //   `¿Deseas cambiar al usuario ${userId}?`,
-        //   () => {
-        //     // Realizamos el cambio de usuario
-
-        //   },
-        //   () => {
-        //     // El usuario canceló
-        //   }
-        // );
+        frappe
+          .xcall('restaurant_management.api.impersonate', {
+            user: userId,
+            reason: '',
+          })
+          .then(() => window.location.reload());
       });
     });
   }
