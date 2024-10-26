@@ -2,7 +2,7 @@
 from __future__ import unicode_literals
 
 from . import __version__ as app_version
-from .fixtures import get_assets, get_custom_fields
+from .fixtures import get_assets, get_assets_css, get_custom_fields
 
 app_name = "restaurant_management"
 app_title = "Restaurant"
@@ -12,7 +12,7 @@ app_icon = "octicon octicon-file-directory"
 app_color = "grey"
 app_email = "qubitcore.io@gmail.com"
 app_license = "MIT"
-source_link = "https://github.com/alphabit-technology/erpnext-restaurant"
+# source_link = "https://github.com/alphabit-technology/erpnext-restaurant"
 
 fixtures = get_custom_fields()
 
@@ -27,11 +27,8 @@ doc_events = {
     },
 }
 
-app_include_css = [
-    "/assets/restaurant_management/helper/css/desk-form.css",
-    "/assets/restaurant_management/helper/css/custom.css",
-    "/assets/restaurant_management/helper/css/num-pad.css",
-]
+# app_include_css = get_assets_css()
+app_include_js = get_assets()
 
 after_migrate = "restaurant_management.setup.install.after_install"
 after_install = "restaurant_management.setup.install.after_install"
@@ -47,6 +44,14 @@ jinja = {
 
 # include js, css files in header of desk.html
 # app_include_css = "/assets/{app_name}/css/{app_name}.css"
+#  "desk-form.bundle.css",
+#     "custom.bundle.css",
+#     "num-pad.bundle.css",
+# app_include_css = [
+#     "/assets/restaurant_management/css/desk-form.bundle.css",
+#     "/assets/restaurant_management/css/custom.bundle.css",
+#     "/assets/restaurant_management/css/num-pad.bundle.css",
+# ]
 
 
 # include js, css files in header of web template
@@ -165,6 +170,3 @@ jinja = {
 # exempt linked doctypes from being automatically cancelled
 #
 # auto_cancel_exempted_doctypes = ["Auto Repeat"]
-
-
-app_include_js = get_assets()

@@ -303,8 +303,9 @@ class OrderItem {
 
     let items_response = await this.get_product_bundle(this.data.item_code);
     console.log('res', items_response);
-
-    this.dialog_choices(items_response);
+    if (items_response.length > 0) {
+      this.dialog_choices(items_response);
+    }
   }
 
   dialog_choices(items) {
