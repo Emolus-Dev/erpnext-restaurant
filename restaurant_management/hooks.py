@@ -170,3 +170,8 @@ jinja = {
 # exempt linked doctypes from being automatically cancelled
 #
 # auto_cancel_exempted_doctypes = ["Auto Repeat"]
+
+sounds = [
+    {"name": "error-custom", "src": "/assets/restaurant_management/sounds/error-custom.mp3", "volume": 0.5},
+    {"name": "success-custom", "src": "/assets/restaurant_management/sounds/success-custom.mp3", "volume": 0.5},
+]
