@@ -273,6 +273,7 @@ class TableOrder(Document):
 
     def get_invoice(self, entry_items=None, make=False):
         invoice = frappe.new_doc("POS Invoice")
+        invoice.customer_group = self.customer_group
         self.transfer_order_values(invoice)
 
         invoice.items = []
@@ -565,6 +566,7 @@ class TableOrder(Document):
 
     def calculate_order(self, items, save=False):
         entry_items = {item["identifier"]: item for item in items}
+        
         invoice = self.get_invoice(entry_items)
 
         self.entry_items = []
@@ -720,6 +722,7 @@ class TableOrder(Document):
                 row["name"] = item.identifier
                 row["order"] = short_name
                 row["table_description"] = self.table_info
+                row["customer_group"] = self.customer_group
                 # row["table_info"] = self.table_info
 
                 items.append(row)

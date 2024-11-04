@@ -461,28 +461,6 @@ class OrderItem {
   setupDialogEvents(dialog) {
     const wrapper = dialog.fields_dict.html_container.$wrapper;
 
-    // Remover eventos anteriores si existen
-    // wrapper.off('click.itemActions');
-
-    // // Usar un solo delegado de eventos para todos los clics
-    // wrapper.on('click.itemActions', (e) => {
-    //   const target = $(e.target);
-
-    //   if (target.hasClass('increment-btn') || target.closest('.increment-btn').length) {
-    //     const itemCode = target.closest('[data-item-code]').data('item-code');
-    //     this.quantities[itemCode] = (this.quantities[itemCode] || 0) + 1;
-    //     this.updateQuantityDisplay(itemCode);
-    //   }
-
-    //   if (target.hasClass('decrement-btn') || target.closest('.decrement-btn').length) {
-    //     const itemCode = target.closest('[data-item-code]').data('item-code');
-    //     if (this.quantities[itemCode] > 0) {
-    //       this.quantities[itemCode]--;
-    //       this.updateQuantityDisplay(itemCode);
-    //     }
-    //   }
-    // });
-
     wrapper.on('click.itemActions', async (e) => {
       const target = $(e.target);
       let itemCode;
