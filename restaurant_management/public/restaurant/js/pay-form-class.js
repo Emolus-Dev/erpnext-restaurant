@@ -309,23 +309,19 @@ class PayForm extends DeskForm {
   }
 
   print_pre_order() {
-    // frappe.confirm(__('Print Pre Order'), () => {
-    //   // frappe.db.set_value('Table Order', this.order.data.name, 'status', 'Sent');
-
-    //   // this.send2bridgeRemote('Table Order', this.order.data.name, 'Factura La Rosa', 'Caja');
-    //   // this.send2bridgeRemote('Table Order', this.order.data.name, RM.pos_profile.print_format, 'COCINA1');
-
-    // });
     frappe.db
       .get_value('Silent Print Format', RM.pos_profile.custom_print_format_pre_cuenta, ['default_print_type'])
       .then((r) => {
         let values = r.message;
 
+        console.log(RM.pos_profile.custom_print_format_pre_cuenta, values.default_print_type, RM.pos_profile.name);
+
         this.send2bridgeRemote(
           'Table Order',
           this.order.data.name,
           RM.pos_profile.custom_print_format_pre_cuenta,
-          values.default_print_type
+          values.default_print_type,
+          RM.pos_profile.name
         );
       });
   }
@@ -344,6 +340,8 @@ class PayForm extends DeskForm {
         name: name,
         print_format: print_format,
         print_type: print_type,
+        pos_profile: pos_profile,
+        usr_in_session: frappe.session.user,
       },
       callback: function (r) {
         if (r.message) {
@@ -551,16 +549,15 @@ class PayForm extends DeskForm {
       customize: true,
       title: title,
     };
-    frappe.db
-    .get_value('Silent Print Format', RM.pos_profile.print_format, ['default_print_type'])
-    .then((r) => {
+    frappe.db.get_value('Silent Print Format', RM.pos_profile.print_format, ['default_print_type']).then((r) => {
       let values = r.message;
-      console.log(RM.pos_profile.print_format + ' ' +values)
+      console.log(RM.pos_profile.print_format + ' ' + values);
       this.send2bridgeRemote(
         'POS Invoice',
         invoice_name,
         RM.pos_profile.print_format,
-        values.default_print_type
+        values.default_print_type,
+        RM.pos_profile.name
       );
     });
 

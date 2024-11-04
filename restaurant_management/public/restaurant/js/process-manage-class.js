@@ -202,15 +202,17 @@ ProcessManage = class ProcessManage {
 
         console.log(order.entry_name, this.name);
 
+        // Se ejecuta desde la vista de centro de producción
         frappe.db.get_value('Restaurant Object', this.name, ['default_print_type', 'print_copies']).then((r) => {
           let values = r.message;
-          console.log(values, order, this.name);
+          console.log(values, order, this.name, RM.pos_profile);
 
           this.send2bridgeRemoteProductioCenter(
             'Order Entry Item',
             order.entry_name,
             'Order Account Item',
-            values.default_print_type
+            values.default_print_type,
+            RM.pos_profile.name
           );
         });
       }
@@ -324,6 +326,7 @@ ProcessManage = class ProcessManage {
     //   this.print_modal = new DeskModal(props);
     // }
 
+    // Se ejecuta desde la vista de centro de producción
     frappe.db.get_value('Restaurant Object', this.name, ['default_print_type', 'print_copies']).then((r) => {
       let values = r.message;
       console.log(values, data.entry_name, this.name);
@@ -332,11 +335,13 @@ ProcessManage = class ProcessManage {
         'Order Entry Item',
         data.entry_name,
         'Order Account Item',
-        values.default_print_type
+        values.default_print_type,
+        RM.pos_profile.name
       );
     });
   }
 
+  // Se ejecuta desde la vista de centro de producción
   send2bridgeRemoteProductioCenter(doctype, name, print_format, print_type, pos_profile = '') {
     frappe.call({
       method: 'silent_print.utils.print_format.print_silently',
@@ -345,6 +350,8 @@ ProcessManage = class ProcessManage {
         name: name,
         print_format: print_format,
         print_type: print_type,
+        pos_profile: pos_profile,
+        usr_in_session: frappe.session.user,
       },
       callback: function (r) {
         if (r.message) {

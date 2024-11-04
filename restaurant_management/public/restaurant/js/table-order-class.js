@@ -618,6 +618,8 @@ class TableOrder {
         name: name,
         print_format: print_format,
         print_type: print_type,
+        pos_profile: pos_profile,
+        usr_in_session: frappe.session.user,
       },
       callback: function (r) {
         if (r.message) {
@@ -650,24 +652,19 @@ class TableOrder {
       title: title,
     };
 
-    // this.send2bridgeRemoteTblOrder(
-    //   'Table Order',
-    //   this.data.name,
-    //   // RM.pos_profile.custom_print_format_pre_cuenta,
-    //   'Orden Cocina',
-    //   'COCINA1'
-    // );
-
     frappe.db
       .get_value('Silent Print Format', RM.pos_profile.custom_print_format_pre_cuenta, ['default_print_type'])
       .then((r) => {
         let values = r.message;
 
+        console.log('RM.pos_profile.custom_print_format_pre_cuenta', RM.pos_profile, values);
+
         this.send2bridgeRemoteTblOrder(
           'Table Order',
           this.data.name,
           RM.pos_profile.custom_print_format_pre_cuenta,
-          values.default_print_type
+          values.default_print_type,
+          RM.pos_profile.name
         );
       });
 
