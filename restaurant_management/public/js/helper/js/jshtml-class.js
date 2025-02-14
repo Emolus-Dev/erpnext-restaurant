@@ -1,3 +1,4 @@
+console.log('5 jshtml-class.js');
 class JSHtml {
   #obj = null;
   #disabled = false;

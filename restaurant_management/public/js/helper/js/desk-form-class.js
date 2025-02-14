@@ -1,3 +1,5 @@
+console.log('1 desk-form-class.js');
+
 class DeskForm extends FrappeForm {
   is_hide = true;
   has_footer = true;

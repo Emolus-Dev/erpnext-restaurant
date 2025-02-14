@@ -1,3 +1,4 @@
+console.log('7 drag.js');
 class Drag {
   move(e, obj) {
     if (!obj.is_selected) return;
@@ -15,8 +16,8 @@ class Drag {
     if (!obj.is_selected) return;
 
     let target = e.target,
-      x = (parseFloat(obj.data_style.x) || 0),
-      y = (parseFloat(obj.data_style.y) || 0);
+      x = parseFloat(obj.data_style.x) || 0,
+      y = parseFloat(obj.data_style.y) || 0;
 
     target.style.width = e.rect.width + 'px';
     target.style.height = e.rect.height + 'px';

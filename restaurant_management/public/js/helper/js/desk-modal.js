@@ -1,3 +1,4 @@
+console.log('2 desk-modal.js');
 class DeskModal {
   constructor(options) {
     Object.assign(this, options);

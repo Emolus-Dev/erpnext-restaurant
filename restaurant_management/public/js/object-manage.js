@@ -1,3 +1,4 @@
+console.log('8 object-manage.js');
 class ObjectManage {
   #children = {};
 
@@ -51,7 +52,7 @@ class ObjectManage {
         index++;
       });
     } else {
-      Object.keys(children).forEach(key => {
+      Object.keys(children).forEach((key) => {
         f(children[key], key, index);
         index++;
       });
@@ -100,7 +101,7 @@ class ObjectManage {
 
   get_child_by_keys(keys) {
     let child = this;
-    keys.forEach(key => {
+    keys.forEach((key) => {
       child = child.get_child_by_key(key);
     });
     return child;

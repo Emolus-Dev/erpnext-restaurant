@@ -1,3 +1,4 @@
+console.log('4 frappe-helper-api.js');
 class FrappeHelperApi {
   #api = this;
   constructor() {}

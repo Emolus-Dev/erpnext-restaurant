@@ -783,43 +783,194 @@ RestaurantManage = class RestaurantManage {
   }
 
   show_user_selector(users) {
+    // Primero creamos y agregamos los estilos
+    const styleId = 'user-selector-styles';
+    if (!document.getElementById(styleId)) {
+      const styleSheet = document.createElement('style');
+      styleSheet.id = styleId;
+      styleSheet.textContent = `
+        .user-avatar-menu {
+          text-align: center;
+          padding: 10px;
+          width: 100%;
+        }
+
+        .avatar-list {
+          display: grid;
+          grid-template-columns: repeat(4, 1fr);
+          gap: 20px;
+          padding: 15px 0;
+          width: 100%;
+        }
+
+        .avatar-item {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          text-align: center;
+          cursor: pointer;
+          padding: 10px;
+          border-radius: 8px;
+          transition: all 0.3s ease;
+          border: 2px solid #E5E7EB;
+          width: 120px;
+          margin: 0 auto;
+          background-color: #f9f9f9;
+        }
+
+        .avatar-item:hover {
+          background-color: #F3F4F6;
+          transform: translateY(-2px);
+        }
+
+        .avatar-image {
+          width: 70px;
+          height: 70px;
+          margin-bottom: 8px;
+        }
+
+        .avatar-image img, .avatar-placeholder {
+          width: 100%;
+          height: 100%;
+          border-radius: 50%;
+          object-fit: cover;
+          border: 2px solid #E5E7EB;
+        }
+
+        .avatar-placeholder {
+          background-color: #E5E7EB;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 24px;
+          color: #6B7280;
+        }
+
+        .avatar-name {
+          font-size: 14px;
+          color: #374151;
+          width: 100%;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          max-width: 100px;
+        }
+
+        .menu-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          position: relative;
+          margin-bottom: 20px;
+        }
+
+        .close-button {
+          background: none;
+          border: none;
+          cursor: pointer;
+          padding: 8px;
+          color: #6B7280;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          transition: all 0.2s ease;
+        }
+
+        .close-button:hover {
+          background-color: #F3F4F6;
+          color: #374151;
+        }
+
+        .close-button svg {
+          width: 20px;
+          height: 20px;
+        }
+
+        @media (max-width: 768px) {
+          .avatar-list {
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+          }
+
+          .avatar-item {
+            width: 100px;
+          }
+
+          .menu-header h3 {
+            font-size: 16px;
+          }
+        }
+
+        @media (max-width: 576px) {
+          .avatar-list {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+          }
+
+          .avatar-item {
+            width: 90px;
+            padding: 8px;
+          }
+
+          .avatar-image {
+            width: 50px;
+            height: 50px;
+          }
+
+          .avatar-name {
+            font-size: 12px;
+            max-width: 80px;
+          }
+        }
+
+        @media (max-width: 360px) {
+          .avatar-list {
+            grid-template-columns: repeat(1, 1fr);
+          }
+
+          .avatar-item {
+            width: 100%;
+            max-width: 120px;
+          }
+        }
+      `;
+      document.head.appendChild(styleSheet);
+    }
+
     // Creamos el HTML para el menú de usuarios
     const userAvatarsHTML = `
-    <div class="user-avatar-menu">
+      <div class="user-avatar-menu">
         <div class="menu-header">
-            <h3 class="text-lg font-bold mb-4">Cambiar Usuario</h3>
-            <button class="close-button">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <line x1="18" y1="6" x2="6" y2="18"></line>
-                    <line x1="6" y1="6" x2="18" y2="18"></line>
-                </svg>
-            </button>
+          <h3 class="text-lg font-bold mb-4">Cambiar Usuario</h3>
+          <button class="close-button">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
         </div>
         <div class="avatar-list">
-            ${users
-              .map(
-                (user) => `
-                <div class="avatar-item" data-user="${user.name}">
-                    <div class="avatar-image">
-                        ${
-                          user.user_image
-                            ? frappe.get_avatar(
-                                'avatar-large', // clases CSS
-                                user.full_name, // título
-                                user.user_image, // imagen
-                                ''
-                              )
-                            : `<div class="avatar-placeholder">${user.full_name.charAt(0)}</div>` // frappe.avatar(user.name, 'avatar-large')
-                        }
-                    </div>
-                    <div class="avatar-name">${user.full_name}</div>
-                </div>
-            `
-              )
-              .join('')}
+          ${users
+            .map(
+              (user) => `
+            <div class="avatar-item" data-user="${user.name}">
+              <div class="avatar-image">
+                ${
+                  user.user_image
+                    ? frappe.get_avatar('avatar-large', user.full_name, user.user_image, '')
+                    : `<div class="avatar-placeholder">${user.full_name.charAt(0)}</div>`
+                }
+              </div>
+              <div class="avatar-name">${user.full_name}</div>
+            </div>
+          `
+            )
+            .join('')}
         </div>
-    </div>
-`;
+      </div>
+    `;
 
     // Mostramos el menú
     frappe.dom.freeze(userAvatarsHTML, 'freeze-screen-change-user');
@@ -831,14 +982,12 @@ RestaurantManage = class RestaurantManage {
       freezeArea.style.setProperty('opacity', '1', 'important');
       freezeArea.style.setProperty('border-radius', '8px', 'important');
       freezeArea.style.setProperty('padding', '10px 10px', 'important');
-
       freezeArea.style.setProperty('position', 'fixed', 'important');
       freezeArea.style.setProperty('top', '50%', 'important');
       freezeArea.style.setProperty('left', '50%', 'important');
       freezeArea.style.setProperty('transform', 'translate(-50%, -50%)', 'important');
       freezeArea.style.setProperty('max-height', '90vh', 'important');
       freezeArea.style.setProperty('overflow-y', 'auto', 'important');
-
       freezeArea.style.setProperty('width', 'auto', 'important');
       freezeArea.style.setProperty('min-width', '600px', 'important');
       freezeArea.style.setProperty('max-width', '90%', 'important');
@@ -857,159 +1006,7 @@ RestaurantManage = class RestaurantManage {
       freezeContainer.style.setProperty('bottom', '0', 'important');
     }
 
-    // estilos para el cotenido
-    const style = document.createElement('style');
-
-    style.textContent = `
-      .user-avatar-menu {
-        text-align: center;
-        padding: 10px;
-        width: 100%;
-      }
-
-      .avatar-list {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 20px;
-        padding: 15px 0;
-        width: 100%;
-      }
-
-      .avatar-item {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        text-align: center;
-        cursor: pointer;
-        padding: 10px;
-        border-radius: 8px;
-        transition: all 0.3s ease;
-        border: 2px solid #E5E7EB;
-        width: 120px;
-        margin: 0 auto;
-        background-color: #f9f9f9;
-      }
-
-      .avatar-item:hover {
-        background-color: #F3F4F6;
-        transform: translateY(-2px);
-      }
-
-      .avatar-image {
-        width: 70px;
-        height: 70px;
-        margin-bottom: 8px;
-      }
-
-      avatar-image img, .avatar-placeholder {
-        width: 100%;
-        height: 100%;
-        border-radius: 50%;
-        object-fit: cover;
-        border: 2px solid #E5E7EB; // Agregado el borde a las imágenes
-      }
-
-      .avatar-placeholder {
-        background-color: #E5E7EB;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 24px;
-        color: #6B7280;
-      }
-      .avatar-name {
-        font-size: 14px;
-        color: #374151;
-        width: 100%;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        max-width: 100px;
-      }
-
-      .menu-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        position: relative;
-        margin-bottom: 20px;
-    }
-
-    .close-button {
-        background: none;
-        border: none;
-        cursor: pointer;
-        padding: 8px;
-        color: #6B7280;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: all 0.2s ease;
-    }
-
-    .close-button:hover {
-        background-color: #F3F4F6;
-        color: #374151;
-    }
-
-    .close-button svg {
-        width: 20px;
-        height: 20px;
-    }
-
-      @media (max-width: 768px) {
-    .avatar-list {
-      grid-template-columns: repeat(3, 1fr);
-      gap: 15px;
-    }
-
-    .avatar-item {
-      width: 100px;
-    }
-
-    .menu-header h3 {
-      font-size: 16px;
-    }
-  }
-
-    @media (max-width: 576px) {
-    .avatar-list {
-      grid-template-columns: repeat(2, 1fr);
-      gap: 10px;
-    }
-
-    .avatar-item {
-      width: 90px;
-      padding: 8px;
-    }
-
-    .avatar-image {
-      width: 50px;
-      height: 50px;
-    }
-
-    .avatar-name {
-      font-size: 12px;
-      max-width: 80px;
-    }
-  }
-
-  @media (max-width: 360px) {
-    .avatar-list {
-      grid-template-columns: repeat(1, 1fr);
-    }
-
-    .avatar-item {
-      width: 100%;
-      max-width: 120px;
-    }
-  }
-    `;
-
-    document.head.appendChild(style);
-
+    // Ajustamos el ancho del contenedor según el tamaño de la pantalla
     const adjustContainerWidth = () => {
       const freezeArea = document.querySelector('.freeze-message-container');
       if (freezeArea) {
@@ -1030,31 +1027,30 @@ RestaurantManage = class RestaurantManage {
     };
 
     adjustContainerWidth();
-    document.querySelector('.close-button').addEventListener('click', () => {
-      frappe.dom.unfreeze();
-    });
-
     window.addEventListener('resize', adjustContainerWidth);
 
-    // Manejamos los clicks en los avatares
-    document.querySelectorAll('.avatar-item').forEach((avatar) => {
-      avatar.addEventListener('click', function () {
-        const userId = this.getAttribute('data-user');
-
-        console.log('userID', userId);
-
-        if (userId === frappe.session.user) {
-          return;
-        }
-
-        frappe
-          .xcall('restaurant_management.api.impersonate', {
-            user: userId,
-            reason: '',
-          })
-          .then(() => window.location.reload());
+    // Manejamos los clicks
+    setTimeout(() => {
+      // Cerrar modal
+      document.querySelector('.close-button')?.addEventListener('click', () => {
+        frappe.dom.unfreeze();
       });
-    });
+
+      // Click en avatares
+      document.querySelectorAll('.avatar-item').forEach((avatar) => {
+        avatar.addEventListener('click', function () {
+          const userId = this.getAttribute('data-user');
+          if (userId === frappe.session.user) return;
+
+          frappe
+            .xcall('restaurant_management.api.impersonate', {
+              user: userId,
+              reason: '',
+            })
+            .then(() => window.location.reload());
+        });
+      });
+    }, 0);
   }
 
   get room_from_url() {

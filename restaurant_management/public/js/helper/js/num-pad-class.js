@@ -1,3 +1,4 @@
+console.log('6 num-pad-class.js');
 class NumPad {
   #input = null;
   #html = '';

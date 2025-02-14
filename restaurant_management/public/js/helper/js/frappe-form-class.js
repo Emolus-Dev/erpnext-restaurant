@@ -1,3 +1,5 @@
+console.log('3 frappe-form-class.js');
+
 frappe.provide('frappe.ui');
 
 class FrappeForm extends frappe.ui.FieldGroup {
