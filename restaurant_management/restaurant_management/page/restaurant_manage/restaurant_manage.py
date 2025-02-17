@@ -151,7 +151,8 @@ def listeners(args):
 def get_settings_data():
     restaurant_settings = frappe.get_single("Restaurant Settings")
     values = restaurant_settings.settings_data()
-    frappe.log_error("values --> ", values)
+    # frappe.log_error("values --> ", values)
+    # return values
     return values
 
 
