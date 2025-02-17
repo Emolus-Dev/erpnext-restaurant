@@ -13,7 +13,7 @@ def get_data():
             "color": "#3498db",
             "icon": "octicon octicon-repo",
             "type": "module",
-            "description": "Restaurant Management."
+            "description": "Restaurant Management.",
         },
     ]
 

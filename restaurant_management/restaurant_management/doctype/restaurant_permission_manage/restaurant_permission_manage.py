@@ -6,6 +6,7 @@ from __future__ import unicode_literals
 import frappe
 from frappe.model.document import Document
 
+
 class RestaurantPermissionManage(Document):
-	def on_update(self):
-		frappe.publish_realtime("update_settings")
+    def on_update(self):
+        frappe.publish_realtime("update_settings")

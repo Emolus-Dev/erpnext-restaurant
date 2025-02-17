@@ -566,7 +566,7 @@ class TableOrder(Document):
 
     def calculate_order(self, items, save=False):
         entry_items = {item["identifier"]: item for item in items}
-        
+
         invoice = self.get_invoice(entry_items)
 
         self.entry_items = []

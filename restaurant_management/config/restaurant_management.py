@@ -24,7 +24,7 @@ def get_data():
                     "type": "page",
                     "name": "restaurant-manage",
                     "label": _("Restaurant Manage"),
-                    "icon": "fa fa-bar-chart"
+                    "icon": "fa fa-bar-chart",
                 },
             ],
         }
