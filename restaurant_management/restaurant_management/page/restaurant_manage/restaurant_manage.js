@@ -504,9 +504,17 @@ RestaurantManage = class RestaurantManage {
 
   get settings_data() {
     return new Promise((res) => {
-      frappe.xcall(`${this.url_manage}get_settings_data`, {}).then((r) => {
-        this.set_settings_data(r);
-        res();
+      let url_manage = `restaurant_management.restaurant_management.page.restaurant_manage.restaurant_manage.get_settings_data`;
+      console.log('url_manage --> ', url_manage);
+
+      frappe.call({
+        method: url_manage,
+        args: {},
+        callback: ({ message }) => {
+          console.log('message --> ', message);
+          this.set_settings_data(message);
+          res();
+        },
       });
     });
   }

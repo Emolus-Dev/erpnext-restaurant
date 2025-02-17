@@ -4,6 +4,7 @@ import frappe
 
 from erpnext.accounts.doctype.pos_invoice.pos_invoice import get_stock_availability
 from erpnext.accounts.doctype.pos_profile.pos_profile import get_item_groups
+from frappe.utils.nestedset import get_root_of
 
 
 class RestaurantManage:
@@ -149,7 +150,9 @@ def listeners(args):
 @frappe.whitelist()
 def get_settings_data():
     restaurant_settings = frappe.get_single("Restaurant Settings")
-    return restaurant_settings.settings_data()
+    values = restaurant_settings.settings_data()
+    frappe.log_error("values --> ", values)
+    return values
 
 
 def pos_profile_data():
