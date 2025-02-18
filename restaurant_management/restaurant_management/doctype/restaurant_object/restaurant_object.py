@@ -126,6 +126,8 @@ class RestaurantObject(Document):
         # last_user = self.current_user
         self.validate_transaction(frappe.session.user, from_crm)
 
+        frappe.log_error("add_order", f"{client} -- {self.current_user}")
+
         if self.customer is None:
             frappe.throw(_("You must set a customer to this table"))
 

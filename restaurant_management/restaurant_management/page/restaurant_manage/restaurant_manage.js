@@ -55,6 +55,7 @@ RestaurantManage = class RestaurantManage {
   #company = null;
   #components = [];
   #lang = null;
+  #current_user = null;
   currency_precision = 2;
   editing = false;
   transfer_order = null;
@@ -77,6 +78,7 @@ RestaurantManage = class RestaurantManage {
     this.page = wrapper.page;
     this.url_manage = 'restaurant_management.restaurant_management.page.restaurant_manage.restaurant_manage.';
     this.#company = frappe.defaults.get_user_default('company');
+    this.#current_user = frappe.session.user;
 
     const assets = [
       'js/pos-restaurant-controller.js',
@@ -978,16 +980,16 @@ RestaurantManage = class RestaurantManage {
 
     // Manejamos los clicks
     setTimeout(() => {
-      // Cerrar modal
       document.querySelector('.close-button')?.addEventListener('click', () => {
         frappe.dom.unfreeze();
       });
 
-      // CUando se clickea en un avatar
       document.querySelectorAll('.avatar-item').forEach((avatar) => {
         avatar.addEventListener('click', function () {
           const userId = this.getAttribute('data-user');
-          if (userId === frappe.session.user) return;
+          if (userId === RM.current_user) return;
+
+          frappe.dom.freeze(__('Cambiando usuario...'));
 
           frappe
             .xcall('restaurant_management.api.impersonate', {
@@ -995,27 +997,22 @@ RestaurantManage = class RestaurantManage {
               reason: '',
             })
             .then(() => {
-              // Actualizamos las cookies de sesión
-              frappe.xcall('restaurant_management.api.get_session_info').then((bootinfo) => {
-                // Actualizamos la sesión con los nuevos datos
-                frappe.session = bootinfo.session;
-                frappe.boot = bootinfo;
-                frappe.user.name = userId;
+              // Actualizamos el usuario global
+              // RM.set_current_user(userId);
 
-                // Cerramos el modal
-                frappe.dom.unfreeze();
+              // Cerramos el modal
+              frappe.dom.unfreeze();
 
-                // Recargamos los datos del restaurante
-                RM.settings_data.then(() => {
-                  RM.make_rooms().then(() => {
-                    RM.check_permissions_status();
-                    frappe.show_alert({
-                      message: __(`Usuario cambiado a ${bootinfo.user.name}`),
-                      indicator: 'green',
-                    });
-                  });
-                });
+              frappe.show_alert({
+                message: __(`Usuario cambiado a ${userId}`),
+                indicator: 'green',
               });
+
+              window.location.reload();
+            })
+            .catch((error) => {
+              frappe.dom.unfreeze();
+              frappe.throw(__('Error al cambiar de usuario: ') + error.message);
             });
         });
       });
@@ -1187,9 +1184,9 @@ RestaurantManage = class RestaurantManage {
   }
 
   can_open_order_manage(table) {
-    if (frappe.session.user === 'Administrator' || this.can_pay) return true;
+    if (this.current_user === 'Administrator' || this.can_pay) return true;
 
-    if (table.data.current_user !== frappe.session.user && table.data.orders_count > 0) {
+    if (table.data.current_user !== this.current_user && table.data.orders_count > 0) {
       if (this.restrictions.restricted_to_owner_table) {
         return this.check_permissions('order', null, 'manage');
       }
@@ -1203,5 +1200,34 @@ RestaurantManage = class RestaurantManage {
   }
   OMName(order_manage) {
     return 'order_manage' + order_manage;
+  }
+
+  // Getters y setters para el usuario actual
+  get current_user() {
+    return this.#current_user;
+  }
+
+  set_current_user(user) {
+    this.#current_user = user;
+    // Emitimos un evento para notificar el cambio de usuario
+    this.emit_user_change(user);
+  }
+
+  // Método para emitir el evento de cambio de usuario
+  emit_user_change(user) {
+    const event = new CustomEvent('rm_user_changed', {
+      detail: {
+        user: user,
+        timestamp: new Date().getTime(),
+      },
+    });
+    window.dispatchEvent(event);
+  }
+
+  // Método para suscribirse a cambios de usuario
+  subscribe_to_user_changes(callback) {
+    window.addEventListener('rm_user_changed', (event) => {
+      callback(event.detail);
+    });
   }
 };

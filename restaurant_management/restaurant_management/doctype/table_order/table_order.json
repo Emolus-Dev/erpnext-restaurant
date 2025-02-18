@@ -19,6 +19,7 @@
   "room_description",
   "customer_name",
   "dinners",
+  "restaurant_user",
   "section_break_8",
   "customer_primary_address",
   "delivery_branch",
@@ -292,12 +293,18 @@
    "fieldname": "tax_id",
    "fieldtype": "Data",
    "label": "Tax ID"
+  },
+  {
+   "fieldname": "restaurant_user",
+   "fieldtype": "Link",
+   "label": "Restaurant User",
+   "options": "User"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-10-15 15:01:15.376730",
+ "modified": "2025-02-18 12:41:31.388914",
  "modified_by": "Administrator",
  "module": "Restaurant Management",
  "name": "Table Order",
