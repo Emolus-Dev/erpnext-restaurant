@@ -998,7 +998,7 @@ RestaurantManage = class RestaurantManage {
             })
             .then(() => {
               // Actualizamos el usuario global
-              // RM.set_current_user(userId);
+              RM.set_current_user(userId);
 
               // Cerramos el modal
               frappe.dom.unfreeze();
