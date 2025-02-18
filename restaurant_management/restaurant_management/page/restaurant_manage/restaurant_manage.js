@@ -994,7 +994,29 @@ RestaurantManage = class RestaurantManage {
               user: userId,
               reason: '',
             })
-            .then(() => console.log('Usuario cambiado')); // window.location.reload() );
+            .then(() => {
+              // Actualizamos las cookies de sesión
+              frappe.xcall('restaurant_management.api.get_session_info').then((bootinfo) => {
+                // Actualizamos la sesión con los nuevos datos
+                frappe.session = bootinfo.session;
+                frappe.boot = bootinfo;
+                frappe.user.name = userId;
+
+                // Cerramos el modal
+                frappe.dom.unfreeze();
+
+                // Recargamos los datos del restaurante
+                RM.settings_data.then(() => {
+                  RM.make_rooms().then(() => {
+                    RM.check_permissions_status();
+                    frappe.show_alert({
+                      message: __(`Usuario cambiado a ${bootinfo.user.name}`),
+                      indicator: 'green',
+                    });
+                  });
+                });
+              });
+            });
         });
       });
     }, 0);

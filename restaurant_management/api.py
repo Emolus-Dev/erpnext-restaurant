@@ -7,9 +7,12 @@ from __future__ import unicode_literals
 import hashlib
 import json
 
+from typing import Any
+
 import frappe
 
 from frappe import _
+from frappe.sessions import get
 
 
 @frappe.whitelist()
@@ -201,6 +204,10 @@ def impersonate(user: str, reason: str):
     # frappe.only_for("Administrator")
 
     impersonator = frappe.session.user
+
+    if impersonator in ["Administrator", "administrator"]:
+        return
+
     frappe.get_doc(
         {
             "doctype": "Activity Log",
@@ -237,3 +244,8 @@ def get_users_pos_profile(pos_profile: str):
         users_with_image.append(user_data)
 
     return users_with_image
+
+
+@frappe.whitelist()
+def get_session_info() -> frappe._dict | Any:
+    return get()
