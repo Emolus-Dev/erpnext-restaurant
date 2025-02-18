@@ -917,8 +917,12 @@ RestaurantManage = class RestaurantManage {
         }
 
         .freeze-message-container {
-          background: rgba(125, 125, 125, 0.6) !important;
-          backdrop-filter: blur(8px);
+          background: rgb(125, 125, 125) !important;
+        }
+
+        #freeze {
+          background-color: rgb(11, 29, 74) !important;
+          opacity: 1 !important;
         }
       `;
       document.head.appendChild(styleSheet);
@@ -961,42 +965,16 @@ RestaurantManage = class RestaurantManage {
     frappe.dom.freeze(userAvatarsHTML, 'freeze-screen-change-user');
 
     // Estilizamos el contenedor
-
     const freezeContainer = document.querySelector('#freeze');
     if (freezeContainer) {
-      freezeContainer.style.setProperty('background-color', 'rgba(11, 29, 74, 0.5)', 'important');
-      freezeContainer.style.setProperty('backdrop-filter', 'blur(2px)', 'important');
+      freezeContainer.style.setProperty('background-color', 'rgb(11, 29, 74)', 'important');
+      freezeContainer.style.setProperty('opacity', '1', 'important');
       freezeContainer.style.setProperty('position', 'fixed', 'important');
       freezeContainer.style.setProperty('top', '0', 'important');
       freezeContainer.style.setProperty('left', '0', 'important');
       freezeContainer.style.setProperty('right', '0', 'important');
       freezeContainer.style.setProperty('bottom', '0', 'important');
     }
-
-    // Ajustamos el ancho del contenedor según el tamaño de la pantalla
-    const adjustContainerWidth = () => {
-      const freezeArea = document.querySelector('.freeze-message-container');
-      if (freezeArea) {
-        //   if (window.innerWidth <= 576) {
-        //     // Mobile
-        //     freezeArea.style.setProperty('width', '95%', 'important');
-        //     freezeArea.style.setProperty('min-width', 'auto', 'important');
-        //   } else if (window.innerWidth <= 768) {
-        //     // Tablet
-        //     freezeArea.style.setProperty('width', '80%', 'important');
-        //     freezeArea.style.setProperty('min-width', '400px', 'important');
-        //   } else {
-        //     // Desktop
-        //     freezeArea.style.setProperty('width', '580px', 'important');
-        //     freezeArea.style.setProperty('min-width', '580px', 'important');
-        //   }
-        // freezeArea.style.setProperty('width', 'auto', 'important');
-        // freezeArea.style.setProperty('min-width', 'auto', 'important');
-      }
-    };
-
-    adjustContainerWidth();
-    window.addEventListener('resize', adjustContainerWidth);
 
     // Manejamos los clicks
     setTimeout(() => {
@@ -1005,7 +983,7 @@ RestaurantManage = class RestaurantManage {
         frappe.dom.unfreeze();
       });
 
-      // Click en avatares
+      // CUando se clickea en un avatar
       document.querySelectorAll('.avatar-item').forEach((avatar) => {
         avatar.addEventListener('click', function () {
           const userId = this.getAttribute('data-user');
@@ -1016,7 +994,7 @@ RestaurantManage = class RestaurantManage {
               user: userId,
               reason: '',
             })
-            .then(() => window.location.reload());
+            .then(() => console.log('Usuario cambiado')); // window.location.reload() );
         });
       });
     }, 0);
