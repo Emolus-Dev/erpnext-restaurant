@@ -915,6 +915,11 @@ RestaurantManage = class RestaurantManage {
           background-color:rgb(196, 196, 196);
           color: #374151;
         }
+
+        .freeze-message-container {
+          background: rgba(125, 125, 125, 0.6) !important;
+          backdrop-filter: blur(8px);
+        }
       `;
       document.head.appendChild(styleSheet);
     }
@@ -956,35 +961,11 @@ RestaurantManage = class RestaurantManage {
     frappe.dom.freeze(userAvatarsHTML, 'freeze-screen-change-user');
 
     // Estilizamos el contenedor
-    const freezeArea = document.querySelector('.freeze-message-container');
-    // if (freezeArea) {
-    //   freezeArea.style.setProperty('background-color', '#FFFFFF', 'important');
-    //   freezeArea.style.setProperty('opacity', '1', 'important');
-    //   freezeArea.style.setProperty('border-radius', '16px', 'important');
-    //   freezeArea.style.setProperty('padding', '0', 'important');
-    //   freezeArea.style.setProperty('position', 'fixed', 'important');
-    //   freezeArea.style.setProperty('top', '50%', 'important');
-    //   freezeArea.style.setProperty('left', '50%', 'important');
-    //   freezeArea.style.setProperty('transform', 'translate(-50%, -50%)', 'important');
-    //   freezeArea.style.setProperty('overflow', 'auto', 'important');
-    //   freezeArea.style.setProperty('width', '900px', 'important');
-    //   freezeArea.style.setProperty('min-width', '320px', 'important');
-    //   freezeArea.style.setProperty('max-width', '95vw', 'important');
-    //   freezeArea.style.setProperty('height', 'auto', 'important');
-    //   freezeArea.style.setProperty('min-height', '300px', 'important');
-    //   freezeArea.style.setProperty('max-height', '90vh', 'important');
-    //   freezeArea.style.setProperty('border', '1px solid red', 'important');
-    //   freezeArea.style.setProperty(
-    //     'box-shadow',
-    //     '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
-    //     'important'
-    //   );
-    // }
 
     const freezeContainer = document.querySelector('#freeze');
     if (freezeContainer) {
-      freezeContainer.style.setProperty('opacity', '1', 'important');
-      freezeContainer.style.setProperty('background-color', 'rgba(15, 23, 42, 0.9)', 'important');
+      freezeContainer.style.setProperty('background-color', 'rgba(11, 29, 74, 0.5)', 'important');
+      freezeContainer.style.setProperty('backdrop-filter', 'blur(2px)', 'important');
       freezeContainer.style.setProperty('position', 'fixed', 'important');
       freezeContainer.style.setProperty('top', '0', 'important');
       freezeContainer.style.setProperty('left', '0', 'important');
