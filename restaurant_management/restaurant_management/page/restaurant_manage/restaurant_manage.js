@@ -799,16 +799,22 @@ RestaurantManage = class RestaurantManage {
       styleSheet.textContent = `
         .user-avatar-menu {
           text-align: center;
-          padding: 10px;
+          padding: 0;
+          border: 2px solid #d1d5db;
           width: 100%;
+          height: 100%;
+          background-color:rgb(249, 249, 250);
+          border-radius: 12px;
         }
 
         .avatar-list {
           display: grid;
-          grid-template-columns: repeat(4, 1fr);
-          gap: 20px;
-          padding: 15px 0;
+          grid-template-columns: repeat(5, minmax(140px, 1fr));
+          gap: 16px;
+          padding: 24px;
           width: 100%;
+          justify-content: center;
+          align-items: center;
         }
 
         .avatar-item {
@@ -818,130 +824,99 @@ RestaurantManage = class RestaurantManage {
           justify-content: center;
           text-align: center;
           cursor: pointer;
-          padding: 10px;
-          border-radius: 8px;
+          padding: 16px;
+          border-radius: 12px;
           transition: all 0.3s ease;
-          border: 2px solid #E5E7EB;
-          width: 120px;
-          margin: 0 auto;
-          background-color: #f9f9f9;
+          border: 1px solid #E5E7EB;
+          width: 140px;
+          height: 160px;
+          background-color: #ffffff;
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
         }
 
         .avatar-item:hover {
           background-color: #F3F4F6;
           transform: translateY(-2px);
+          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+          border-color: #D1D5DB;
         }
 
         .avatar-image {
-          width: 70px;
-          height: 70px;
-          margin-bottom: 8px;
-        }
-
-        .avatar-image img, .avatar-placeholder {
-          width: 100%;
-          height: 100%;
-          border-radius: 50%;
-          object-fit: cover;
-          border: 2px solid #E5E7EB;
-        }
-
-        .avatar-placeholder {
-          background-color: #E5E7EB;
+          width: 80px;
+          height: 80px;
+          margin-bottom: 12px;
           display: flex;
           align-items: center;
           justify-content: center;
-          font-size: 24px;
+          border-radius: 50%;
+          background-color: #F3F4F6;
+          overflow: hidden;
+        }
+
+        .avatar-image img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+        }
+
+        .avatar-placeholder {
+          width: 100%;
+          height: 100%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 32px;
           color: #6B7280;
+          font-weight: 500;
+          background-color: #F3F4F6;
+          border-radius: 50%;
         }
 
         .avatar-name {
           font-size: 14px;
           color: #374151;
+          font-weight: 500;
           width: 100%;
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;
-          max-width: 100px;
+          padding: 0 8px;
+          line-height: 1.4;
         }
 
         .menu-header {
           display: flex;
           justify-content: space-between;
           align-items: center;
-          position: relative;
-          margin-bottom: 20px;
+          padding: 16px 24px;
+          border-bottom: 1px solid #E5E7EB;
+          background-color: #F9FAFB;
+          border-radius: 12px;
+        }
+
+        .menu-header h3 {
+          margin: 0;
+          font-size: 18px;
+          color: #111827;
+          font-weight: 600;
         }
 
         .close-button {
-          background: none;
-          border: none;
-          cursor: pointer;
           padding: 8px;
+          border-radius: 8px;
+          border: none;
+          background: transparent;
+          cursor: pointer;
           color: #6B7280;
-          border-radius: 50%;
           display: flex;
           align-items: center;
           justify-content: center;
-          transition: all 0.2s ease;
+          transition: all 0.2s;
         }
 
         .close-button:hover {
-          background-color: #F3F4F6;
+          background-color:rgb(196, 196, 196);
           color: #374151;
-        }
-
-        .close-button svg {
-          width: 20px;
-          height: 20px;
-        }
-
-        @media (max-width: 768px) {
-          .avatar-list {
-            grid-template-columns: repeat(3, 1fr);
-            gap: 15px;
-          }
-
-          .avatar-item {
-            width: 100px;
-          }
-
-          .menu-header h3 {
-            font-size: 16px;
-          }
-        }
-
-        @media (max-width: 576px) {
-          .avatar-list {
-            grid-template-columns: repeat(2, 1fr);
-            gap: 10px;
-          }
-
-          .avatar-item {
-            width: 90px;
-            padding: 8px;
-          }
-
-          .avatar-image {
-            width: 50px;
-            height: 50px;
-          }
-
-          .avatar-name {
-            font-size: 12px;
-            max-width: 80px;
-          }
-        }
-
-        @media (max-width: 360px) {
-          .avatar-list {
-            grid-template-columns: repeat(1, 1fr);
-          }
-
-          .avatar-item {
-            width: 100%;
-            max-width: 120px;
-          }
         }
       `;
       document.head.appendChild(styleSheet);
@@ -985,23 +960,29 @@ RestaurantManage = class RestaurantManage {
 
     // Estilizamos el contenedor
     const freezeArea = document.querySelector('.freeze-message-container');
-    if (freezeArea) {
-      freezeArea.style.setProperty('background-color', '#FFFFFF', 'important');
-      freezeArea.style.setProperty('opacity', '1', 'important');
-      freezeArea.style.setProperty('border-radius', '8px', 'important');
-      freezeArea.style.setProperty('padding', '10px 10px', 'important');
-      freezeArea.style.setProperty('position', 'fixed', 'important');
-      freezeArea.style.setProperty('top', '50%', 'important');
-      freezeArea.style.setProperty('left', '50%', 'important');
-      freezeArea.style.setProperty('transform', 'translate(-50%, -50%)', 'important');
-      freezeArea.style.setProperty('max-height', '90vh', 'important');
-      freezeArea.style.setProperty('overflow-y', 'auto', 'important');
-      freezeArea.style.setProperty('width', 'auto', 'important');
-      freezeArea.style.setProperty('min-width', '600px', 'important');
-      freezeArea.style.setProperty('max-width', '90%', 'important');
-      freezeArea.style.setProperty('max-height', '90%', 'important');
-      freezeArea.style.setProperty('height', '40%', 'important');
-    }
+    // if (freezeArea) {
+    //   freezeArea.style.setProperty('background-color', '#FFFFFF', 'important');
+    //   freezeArea.style.setProperty('opacity', '1', 'important');
+    //   freezeArea.style.setProperty('border-radius', '16px', 'important');
+    //   freezeArea.style.setProperty('padding', '0', 'important');
+    //   freezeArea.style.setProperty('position', 'fixed', 'important');
+    //   freezeArea.style.setProperty('top', '50%', 'important');
+    //   freezeArea.style.setProperty('left', '50%', 'important');
+    //   freezeArea.style.setProperty('transform', 'translate(-50%, -50%)', 'important');
+    //   freezeArea.style.setProperty('overflow', 'auto', 'important');
+    //   freezeArea.style.setProperty('width', '900px', 'important');
+    //   freezeArea.style.setProperty('min-width', '320px', 'important');
+    //   freezeArea.style.setProperty('max-width', '95vw', 'important');
+    //   freezeArea.style.setProperty('height', 'auto', 'important');
+    //   freezeArea.style.setProperty('min-height', '300px', 'important');
+    //   freezeArea.style.setProperty('max-height', '90vh', 'important');
+    //   freezeArea.style.setProperty('border', '1px solid red', 'important');
+    //   freezeArea.style.setProperty(
+    //     'box-shadow',
+    //     '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+    //     'important'
+    //   );
+    // }
 
     const freezeContainer = document.querySelector('#freeze');
     if (freezeContainer) {
@@ -1018,19 +999,21 @@ RestaurantManage = class RestaurantManage {
     const adjustContainerWidth = () => {
       const freezeArea = document.querySelector('.freeze-message-container');
       if (freezeArea) {
-        if (window.innerWidth <= 576) {
-          // Mobile
-          freezeArea.style.setProperty('width', '95%', 'important');
-          freezeArea.style.setProperty('min-width', 'auto', 'important');
-        } else if (window.innerWidth <= 768) {
-          // Tablet
-          freezeArea.style.setProperty('width', '80%', 'important');
-          freezeArea.style.setProperty('min-width', '400px', 'important');
-        } else {
-          // Desktop
-          freezeArea.style.setProperty('width', '580px', 'important');
-          freezeArea.style.setProperty('min-width', '580px', 'important');
-        }
+        //   if (window.innerWidth <= 576) {
+        //     // Mobile
+        //     freezeArea.style.setProperty('width', '95%', 'important');
+        //     freezeArea.style.setProperty('min-width', 'auto', 'important');
+        //   } else if (window.innerWidth <= 768) {
+        //     // Tablet
+        //     freezeArea.style.setProperty('width', '80%', 'important');
+        //     freezeArea.style.setProperty('min-width', '400px', 'important');
+        //   } else {
+        //     // Desktop
+        //     freezeArea.style.setProperty('width', '580px', 'important');
+        //     freezeArea.style.setProperty('min-width', '580px', 'important');
+        //   }
+        // freezeArea.style.setProperty('width', 'auto', 'important');
+        // freezeArea.style.setProperty('min-width', 'auto', 'important');
       }
     };
 
