@@ -12,6 +12,7 @@ from typing import Any
 import frappe
 
 from frappe import _
+from frappe.permissions import get_user_permissions
 from frappe.sessions import get
 
 
@@ -249,3 +250,8 @@ def get_users_pos_profile(pos_profile: str):
 @frappe.whitelist()
 def get_session_info() -> frappe._dict | Any:
     return get()
+
+
+@frappe.whitelist()
+def get_user_permissions_erp(user) -> dict | Any | frappe._dict:
+    return get_user_permissions(user)

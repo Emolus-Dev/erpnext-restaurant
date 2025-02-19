@@ -901,6 +901,78 @@ RestaurantManage = class RestaurantManage {
   }
 
   /**
+   * Reinicializa el estado de la aplicación
+   * Se usa cuando cambia el usuario o se necesita refrescar todo
+   * @private
+   */
+  async _reinitialize_app_state() {
+    try {
+      // Limpiamos el estado actual
+      this.working('Reinicializando aplicación...');
+
+      // Limpiamos las salas y objetos actuales
+      this.clear_rooms(Object.keys(this.objects));
+      this.current_room = null;
+
+      // Limpiamos el controlador POS actual
+      if (this.pos) {
+        try {
+          // Limpiamos los eventos y referencias del POS actual
+          if (typeof this.pos.cleanup === 'function') {
+            this.pos.cleanup();
+          }
+
+          // Removemos el contenedor del POS si existe
+          const posContainer = this.wrapper.find('.point-of-sale-app');
+          if (posContainer.length) {
+            posContainer.remove();
+          }
+
+          // Limpiamos la referencia
+          this.pos = null;
+          window.cur_pos = null;
+        } catch (error) {
+          console.warn('Error al limpiar POS:', error);
+        }
+      }
+
+      // Recargamos los datos de configuración
+      try {
+        await this.settings_data;
+      } catch (error) {
+        console.error('Error al cargar configuración:', error);
+        throw new Error(__('Error al cargar la configuración del restaurante'));
+      }
+
+      // Reinicializamos el controlador POS
+      try {
+        this.pos = new erpnext.PointOfSale.RestaurantController(this.wrapper);
+        window.cur_pos = this.pos;
+      } catch (error) {
+        console.error('Error al inicializar POS:', error);
+        throw new Error(__('Error al inicializar el punto de venta'));
+      }
+
+      // Recargamos las salas y permisos
+      try {
+        await this.make_rooms();
+        this.check_permissions_status();
+      } catch (error) {
+        console.error('Error al cargar salas:', error);
+        throw new Error(__('Error al cargar las salas del restaurante'));
+      }
+
+      // Actualizamos el estado de los componentes
+      this.test_components();
+
+      this.ready();
+    } catch (error) {
+      console.error('Error al reinicializar la aplicación:', error);
+      throw new Error(__('Error al reinicializar la aplicación: ') + error.message);
+    }
+  }
+
+  /**
    * Cambia el usuario actual del sistema
    * Muestra un selector de usuarios y maneja el cambio
    */
@@ -920,15 +992,84 @@ RestaurantManage = class RestaurantManage {
       });
 
       users_pos = await Promise.all(promises);
-      console.log('users_pos', users_pos);
-
       this.show_user_selector(users_pos);
     } catch (error) {
       console.error('Error fetching user data:', error);
-      frappe.throw(__('Error loading user data'));
+      frappe.throw(__('Error cargando datos de usuarios'));
     }
   }
 
+  /**
+   * Maneja el cambio de usuario
+   * @param {string} userId - ID del nuevo usuario
+   * @private
+   */
+  async _handle_user_change(userId) {
+    if (userId === this.current_user) return;
+
+    frappe.dom.freeze(__('Cambiando usuario...'));
+
+    try {
+      // Llamamos al endpoint de cambio de usuario
+      const impersonateResult = await frappe.xcall('restaurant_management.api.impersonate', {
+        user: userId,
+        reason: '',
+      });
+
+      if (!impersonateResult || impersonateResult.error) {
+        throw new Error(impersonateResult?.error || __('Error al cambiar de usuario'));
+      }
+
+      // Actualizamos las cookies de sesión y datos del usuario
+      try {
+        const userData = await frappe.xcall('frappe.auth.get_logged_user');
+
+        // Actualizamos los defaults del usuario si existen
+        if (userData && userData.defaults) {
+          frappe.defaults.update_user_defaults(userData.defaults);
+        }
+      } catch (error) {
+        console.warn('Error al obtener datos del usuario:', error);
+        // Continuamos aunque falle la obtención de datos del usuario
+      }
+
+      // Actualizamos el usuario global y local
+      frappe.session.user = userId;
+      this.set_current_user(userId);
+
+      // Forzamos una recarga de los permisos del usuario
+      try {
+        await frappe.xcall('restaurant_management.api.get_user_permissions_erp', { user: userId });
+      } catch (error) {
+        console.warn('Error al recargar permisos:', error);
+      }
+
+      // Reinicializamos el estado
+      await this._reinitialize_app_state();
+
+      // Forzamos una actualización de la sesión
+      try {
+        await frappe.xcall('restaurant_management.api.get_session_info');
+      } catch (error) {
+        console.warn('Error al actualizar sesión:', error);
+      }
+
+      frappe.show_alert({
+        message: __(`Usuario cambiado a ${userId}`),
+        indicator: 'green',
+      });
+    } catch (error) {
+      console.error('Error en cambio de usuario:', error);
+      frappe.throw(__('Error al cambiar de usuario: ') + (error.message || __('Error desconocido')));
+    } finally {
+      frappe.dom.unfreeze();
+    }
+  }
+
+  /**
+   * Muestra el selector de usuarios
+   * @param {Array} users - Lista de usuarios disponibles
+   */
   show_user_selector(users) {
     // Primero creamos y agregamos los estilos
     const styleId = 'user-selector-styles';
@@ -1115,42 +1256,13 @@ RestaurantManage = class RestaurantManage {
       freezeContainer.style.setProperty('bottom', '0', 'important');
     }
 
-    // Manejamos los clicks
+    // Modificamos el manejador de click en los avatares
     setTimeout(() => {
-      document.querySelector('.close-button')?.addEventListener('click', () => {
-        frappe.dom.unfreeze();
-      });
-
       document.querySelectorAll('.avatar-item').forEach((avatar) => {
-        avatar.addEventListener('click', function () {
-          const userId = this.getAttribute('data-user');
-          if (userId === RM.current_user) return;
-
-          frappe.dom.freeze(__('Cambiando usuario...'));
-
-          frappe
-            .xcall('restaurant_management.api.impersonate', {
-              user: userId,
-              reason: '',
-            })
-            .then(() => {
-              // Actualizamos el usuario global
-              RM.set_current_user(userId);
-
-              // Cerramos el modal
-              frappe.dom.unfreeze();
-
-              frappe.show_alert({
-                message: __(`Usuario cambiado a ${userId}`),
-                indicator: 'green',
-              });
-
-              window.location.reload();
-            })
-            .catch((error) => {
-              frappe.dom.unfreeze();
-              frappe.throw(__('Error al cambiar de usuario: ') + error.message);
-            });
+        avatar.addEventListener('click', async () => {
+          const userId = avatar.getAttribute('data-user');
+          await this._handle_user_change(userId);
+          frappe.dom.unfreeze(); // Quitamos el freeze del selector
         });
       });
     }, 0);
