@@ -104,21 +104,24 @@ def after_install():
 
 
 def insert_desk_form(form_data):
-    desk_form = frappe.new_doc("Desk Form")
-    desk_form.update(form_data)
-    desk_form.set("docstatus", 0)
-
-    print("    Inserting Desk Form: {}".format(form_data.get("name")))
-
-    desk_form.insert()
+    try:
+        desk_form = frappe.new_doc("Desk Form")
+        desk_form.update(form_data)
+        desk_form.set("docstatus", 0)
+        desk_form.insert()
+        return True
+    except Exception as e:
+        print("    Error inserting Desk Form {}: {}".format(form_data.get("name"), str(e)))
+        return False
 
 
 def create_desk_forms():
     basedir = os.path.abspath(os.path.dirname(__file__))
     apps_dir = basedir.split("apps")[0] + "apps"
 
-    frappe.db.sql("""DELETE FROM `tabDesk Form`""")
-    frappe.db.sql("""DELETE FROM `tabDesk Form Field`""")
+    # Comentamos estas líneas para evitar la eliminación de registros existentes
+    # frappe.db.sql("""DELETE FROM `tabDesk Form`""")
+    # frappe.db.sql("""DELETE FROM `tabDesk Form Field`""")
 
     print("Building Desk Forms")
 
@@ -131,10 +134,20 @@ def create_desk_forms():
 
                 if extension in [".json"]:
                     abspath = os.path.join(dirpath, filename)
-                    f = open(abspath)
+                    with open(abspath) as f:
+                        form_data = json.load(f)
 
-                    insert_desk_form(json.load(f))
-                    f.close()
+                        # Verificamos si el formulario ya existe
+                        existing_form = frappe.db.exists("Desk Form", form_data.get("name"))
+
+                        if existing_form:
+                            print("    Updating Desk Form: {}".format(form_data.get("name")))
+                            desk_form = frappe.get_doc("Desk Form", existing_form)
+                            desk_form.update(form_data)
+                            desk_form.save()
+                        else:
+                            print("    Creating new Desk Form: {}".format(form_data.get("name")))
+                            insert_desk_form(form_data)
 
     print("Building Desk Forms Complete")
 
