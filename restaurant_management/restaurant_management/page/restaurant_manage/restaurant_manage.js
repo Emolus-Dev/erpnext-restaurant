@@ -1,5 +1,11 @@
-/**RestaurantManagement**/
-var RM = null;
+/**
+ * Módulo principal de gestión de restaurante
+ * Maneja la interfaz y funcionalidad del punto de venta para restaurantes
+ */
+
+// Definición de variables globales
+var RM = null; // Instancia principal del gestor de restaurante
+// Constantes para diferentes tipos de acciones
 const [TRANSFER, UPDATE, DELETE, INVOICED, ADD, QUEUE, SPLIT, DOUBLE_CLICK_DELAY] = [
   'Transfer',
   'Update',
@@ -10,9 +16,13 @@ const [TRANSFER, UPDATE, DELETE, INVOICED, ADD, QUEUE, SPLIT, DOUBLE_CLICK_DELAY
   'Split',
   'double_click',
 ];
+
+// Proporciona el namespace para el punto de venta
 frappe.provide('erpnext.PointOfSale');
 
+// Inicialización de la página
 frappe.pages['restaurant-manage'].on_page_load = function (wrapper) {
+  // Configuración inicial de la página
   frappe.ui.make_app_page({
     parent: wrapper,
     title: '',
@@ -21,6 +31,7 @@ frappe.pages['restaurant-manage'].on_page_load = function (wrapper) {
 
   $('body').hide();
 
+  // Verifica configuración del POS antes de inicializar
   frappe.db.get_value('POS Settings', { name: 'POS Settings' }, 'is_online', (r) => {
     if (r && !cint(r.use_pos_in_offline_mode)) {
       RM = new RestaurantManage(wrapper);
@@ -28,7 +39,9 @@ frappe.pages['restaurant-manage'].on_page_load = function (wrapper) {
   });
 };
 
+// Manejo de actualizaciones/refrescos de la página
 frappe.pages['restaurant-manage'].refresh = function () {
+  // Maneja la integración con CRM si hay un cliente
   if (window.crm_customer && RM) {
     RM.crm_customer = window.crm_customer;
     window.crm_customer = null;
@@ -39,39 +52,50 @@ frappe.pages['restaurant-manage'].refresh = function () {
     }
   }
 
+  // Maneja la navegación entre salas
   if (RM && RM.navigate_room) {
     const navigate = RM.navigate_room;
     RM.navigate_room = null;
     RM.objects[navigate].select();
-    //RM.navigate_room = null;
   }
 };
 
+/**
+ * Clase principal que maneja toda la funcionalidad del restaurante
+ * Incluye gestión de mesas, órdenes, pagos y configuraciones
+ */
 RestaurantManage = class RestaurantManage {
-  #pos_profile = null;
-  #permissions = null;
-  #exceptions = null;
-  #restrictions = null;
-  #company = null;
-  #components = [];
-  #lang = null;
-  #current_user = null;
-  currency_precision = 2;
-  editing = false;
-  transfer_order = null;
-  current_room = null;
-  busy = false;
-  sounds = false;
-  client = this.uuid();
-  request_client = null;
-  loaded = false;
+  // Propiedades privadas
+  #pos_profile = null; // Perfil del punto de venta
+  #permissions = null; // Permisos del usuario
+  #exceptions = null; // Excepciones a los permisos
+  #restrictions = null; // Restricciones del sistema
+  #company = null; // Empresa actual
+  #components = []; // Componentes de la UI
+  #lang = null; // Idioma actual
+  #current_user = null; // Usuario actual
+
+  // Propiedades públicas
+  currency_precision = 2; // Precisión decimal para moneda
+  editing = false; // Modo edición activo
+  transfer_order = null; // Orden en transferencia
+  current_room = null; // Sala actual
+  busy = false; // Sistema ocupado
+  sounds = false; // Sonidos activados
+  client = this.uuid(); // ID único del cliente
+  request_client = null; // Cliente que hace la petición
+  loaded = false; // Sistema cargado
   store = {
+    // Almacén de datos
     items: [],
   };
-  objects = [];
+  objects = []; // Objetos del restaurante
+  room = []; // Salas del restaurante
 
-  room = [];
-
+  /**
+   * Constructor de la clase
+   * @param {Object} wrapper - Contenedor principal de la UI
+   */
   constructor(wrapper) {
     this.base_wrapper = wrapper;
     this.wrapper = $(wrapper).find('.layout-main-section');
@@ -80,7 +104,9 @@ RestaurantManage = class RestaurantManage {
     this.#company = frappe.defaults.get_user_default('company');
     this.#current_user = frappe.session.user;
 
+    // Lista de assets necesarios para el funcionamiento
     const assets = [
+      // Assets JS
       'js/pos-restaurant-controller.js',
       'js/restaurant-room-class.js',
       'js/restaurant-object-class.js',
@@ -111,10 +137,12 @@ RestaurantManage = class RestaurantManage {
       'css/restaurant-object.css',
     ].map((asset) => `assets/restaurant_management/restaurant/${asset}`);
 
+    // Carga los assets y luego inicializa
     frappe.require(assets, () => {
       this.make();
     });
 
+    // Configura el manejo de cambios de tamaño de ventana
     this.onResize(() => {
       this.is_mini = window.innerWidth < 400;
       this.is_mobile = window.innerWidth < 768;
@@ -126,14 +154,21 @@ RestaurantManage = class RestaurantManage {
     });
   }
 
+  /**
+   * Maneja eventos de cambio de tamaño de ventana
+   * @param {Function} fn - Función a ejecutar cuando cambie el tamaño
+   */
   onResize(fn) {
     window.addEventListener('resize', () => {
       fn();
     });
-
     fn();
   }
 
+  /**
+   * Inicializa la aplicación
+   * Ejecuta una serie de tareas en secuencia
+   */
   make() {
     return frappe.run_serially([
       () => frappe.dom.freeze(),
@@ -160,24 +195,24 @@ RestaurantManage = class RestaurantManage {
     ]);
   }
 
+  /**
+   * Verifica el estado del perfil POS
+   * Lanza una excepción si no está configurado
+   */
   test_pos() {
     if (this.loaded && this.pos_profile == null) {
       this.raise_exception_for_pos_profile();
     }
   }
 
-  raise_exception_for_pos_profile() {
-    if ($(this.base_wrapper).is(':visible')) {
-      frappe.throw(this.not_has_pos_profile_message);
-    }
-  }
-
-  get not_has_pos_profile_message() {
-    return __('POS Profile is required to use Point-of-Sale');
-  }
-
+  /**
+   * Prepara el DOM inicial de la aplicación
+   * Crea todos los componentes de la interfaz
+   */
   prepare_dom() {
     const self = this;
+
+    // Contenedor de salas
     this.rooms_container = frappe.jshtml({
       tag: 'div',
       properties: {
@@ -185,6 +220,7 @@ RestaurantManage = class RestaurantManage {
       },
     });
 
+    // Mapa del piso/sala
     this.floor_map = frappe
       .jshtml({
         tag: 'div',
@@ -194,6 +230,7 @@ RestaurantManage = class RestaurantManage {
         RM.unselect_all_tables();
       });
 
+    // Botón para agregar mesa
     this.#components.add_table = frappe
       .jshtml({
         tag: 'button',
@@ -346,39 +383,40 @@ RestaurantManage = class RestaurantManage {
         });
       });
 
+    // Renderiza la estructura principal
     this.wrapper.append(`
-			<div class="restaurant-manage">
-				<div class="floor-selector">
-					${this.general_edit_button.html()}
-					${this.change_user_button.html()}
-					${this.rooms_container.html()}
-					${this.add_room_button.html()}
-					${this.setting_button.html()}
-				</div>
-				<div class="floor-map">
-					<div class="floor-map-editor left">
-						${this.components.add_table.html()}
-						${this.components.add_production_center.html()}
-					</div>
-					<div class="floor-map-reserve">
-						${this.components.reservation.html()}
-					</div>
-					<div class="floor-map-editor right">
-						${this.components.edit_room.html()}
-						${this.components.delete_room.html()}
+      <div class="restaurant-manage">
+        <div class="floor-selector">
+          ${this.general_edit_button.html()}
+          ${this.change_user_button.html()}
+          ${this.rooms_container.html()}
+          ${this.add_room_button.html()}
+          ${this.setting_button.html()}
+        </div>
+        <div class="floor-map">
+          <div class="floor-map-editor left">
+            ${this.components.add_table.html()}
+            ${this.components.add_production_center.html()}
+          </div>
+          <div class="floor-map-reserve">
+            ${this.components.reservation.html()}
+          </div>
+          <div class="floor-map-editor right">
+            ${this.components.edit_room.html()}
+            ${this.components.delete_room.html()}
             ${this.components.menu_manage.html()}
-					</div>
-					${this.floor_map.html()}
-				</div>
-			</div>
-			<div class="sidebar-footer">
-				<div class="non-selectable">
-					<span class="restaurant-manage-status">${__('Ready')}</span>
-					${this.pos_profile_description.html()}
-				</div>
-			</div>
-			<div id="customize-alert-message"></div>
-		`);
+          </div>
+          ${this.floor_map.html()}
+        </div>
+      </div>
+      <div class="sidebar-footer">
+        <div class="non-selectable">
+          <span class="restaurant-manage-status">${__('Ready')}</span>
+          ${this.pos_profile_description.html()}
+        </div>
+      </div>
+      <div id="customize-alert-message"></div>
+    `);
 
     this.pull_alert('left');
   }
@@ -602,11 +640,21 @@ RestaurantManage = class RestaurantManage {
     return typeof this.objects[name] != 'undefined' ? this.objects[name] : null;
   }
 
+  /**
+   * Inicializa la sincronización en tiempo real
+   * Configura los eventos para mantener sincronizados los datos entre clientes
+   */
   init_synchronize() {
+    // Debug en tiempo real
     frappe.realtime.on('debug', (data) => {
       console.log(data);
     });
 
+    /**
+     * Verifica items en el gestor de procesos
+     * @param {Array} items - Items a verificar
+     * @param {Object} item_removed - Item eliminado si existe
+     */
     const check_items_in_process_manage = (items, item_removed = null) => {
       this.in_rooms((room) => {
         room.in_tables((table) => {
@@ -620,6 +668,7 @@ RestaurantManage = class RestaurantManage {
       });
     };
 
+    // Sincronización de datos de órdenes
     frappe.realtime.on('synchronize_order_data', (r) => {
       const data = r.data;
       const order = data.order;
@@ -630,6 +679,7 @@ RestaurantManage = class RestaurantManage {
       const table = RM.object(order.data.table);
       if (this.current_room == null || table == null) return;
 
+      // Manejo de transferencias
       if (r.action === TRANSFER) {
         const last_table = RM.object(order.data.last_table);
         if (last_table != null && last_table.order_manage != null) {
@@ -666,6 +716,7 @@ RestaurantManage = class RestaurantManage {
       }
     });
 
+    // Actualización de configuraciones
     frappe.realtime.on('update_settings', () => {
       this.settings_data.then(() => {
         this.make_rooms();
@@ -673,10 +724,12 @@ RestaurantManage = class RestaurantManage {
       });
     });
 
+    // Verificación de salas
     frappe.realtime.on('check_rooms', (r) => {
       this.rooms = r.rooms;
 
       this.settings_data.then(() => {
+        // Filtra las salas según permisos
         this.rooms = this.rooms.filter(
           (room) => this.rooms_access.includes(room.name) || frappe.session.user === 'Administrator'
         );
@@ -685,6 +738,7 @@ RestaurantManage = class RestaurantManage {
       });
     });
 
+    // Actualización del perfil POS
     frappe.realtime.on('pos_profile_update', (r) => {
       if (r && r.has_pos) {
         this.#pos_profile = r.pos;
@@ -694,6 +748,7 @@ RestaurantManage = class RestaurantManage {
       }
     });
 
+    // Actualización del menú
     frappe.realtime.on('update_menu', (r) => {
       const items = this.menu.items;
       r.in_menu ? !items.includes(r.item) && items.push(r.item) : (items = items.filter((i) => i !== r.item));
@@ -768,10 +823,92 @@ RestaurantManage = class RestaurantManage {
     });
   }
 
+  /**
+   * Verifica los permisos del usuario actual
+   * @param {string} model - Modelo a verificar
+   * @param {Object} record - Registro específico a verificar
+   * @param {string} action - Acción a verificar
+   * @returns {boolean} - True si tiene permiso, false si no
+   */
+  check_permissions(model = null, record = null, action) {
+    if (frappe.session.user === 'Administrator') return true;
+
+    let r = false;
+
+    if (model != null) {
+      // Verifica permisos en el modelo
+      let model_in_permissions = this.permissions[model];
+      if (typeof model_in_permissions != 'undefined' && typeof model_in_permissions[action] !== 'undefined') {
+        r = this.permissions[model][action];
+      }
+
+      // Verifica excepciones a los permisos
+      const exception = () => {
+        r = false;
+        this.exceptions.map((e) => {
+          r = e[model + '_' + action] === 1;
+        });
+      };
+
+      if (record == null) {
+        if (!r) {
+          exception();
+        }
+      } else {
+        // Verifica restricciones por propietario
+        if (record.data.owner !== frappe.session.user) {
+          if (model === 'order' && this.restrictions.restricted_to_owner_order) {
+            exception();
+          }
+          if (model === 'table' && this.restrictions.restricted_to_owner_table) {
+            exception();
+          }
+        }
+      }
+
+      // Verifica permisos específicos del POS
+      if (model === 'pos' && r) {
+        r = this.pos_profile['allow_' + action] === 1;
+      }
+    }
+
+    return r;
+  }
+
+  /**
+   * Verifica si el usuario puede realizar pagos
+   * @returns {boolean}
+   */
+  get can_pay() {
+    return this.check_permissions('invoice', null, 'create');
+  }
+
+  /**
+   * Verifica si el usuario puede abrir el gestor de órdenes para una mesa
+   * @param {Object} table - Mesa a verificar
+   * @returns {boolean}
+   */
+  can_open_order_manage(table) {
+    if (this.current_user === 'Administrator' || this.can_pay) return true;
+
+    if (table.data.current_user !== this.current_user && table.data.orders_count > 0) {
+      if (this.restrictions.restricted_to_owner_table) {
+        return this.check_permissions('order', null, 'manage');
+      }
+    }
+
+    return true;
+  }
+
+  /**
+   * Cambia el usuario actual del sistema
+   * Muestra un selector de usuarios y maneja el cambio
+   */
   async change_user_button_action() {
     let users_pos = [];
 
     try {
+      // Obtiene la información de los usuarios disponibles
       const promises = this.pos_profile.applicable_for_users.map(async (user) => {
         const { message } = await frappe.db.get_value('User', user.user, ['full_name', 'user_image']);
 
@@ -1134,67 +1271,6 @@ RestaurantManage = class RestaurantManage {
     return prefix + '_' + id;
   }
 
-  check_permissions(model = null, record = null, action) {
-    if (frappe.session.user === 'Administrator') return true;
-
-    let r = false;
-
-    if (model != null) {
-      let model_in_permissions = this.permissions[model];
-      if (typeof model_in_permissions != 'undefined' && typeof model_in_permissions[action] !== 'undefined') {
-        r = this.permissions[model][action];
-      }
-
-      const exception = () => {
-        r = false;
-        this.exceptions.map((e) => {
-          r = e[model + '_' + action] === 1;
-        });
-      };
-
-      if (record == null) {
-        if (!r) {
-          exception();
-        }
-      } else {
-        if (record.data.owner !== frappe.session.user) {
-          if (model === 'order' && this.restrictions.restricted_to_owner_order) {
-            exception();
-          }
-          if (model === 'table' && this.restrictions.restricted_to_owner_table) {
-            exception();
-          }
-        }
-      }
-
-      if (model === 'pos' && r) {
-        r = this.pos_profile['allow_' + action] === 1;
-      }
-    }
-
-    return r;
-  }
-
-  /*go_to_table(table, room){
-    frappe.set_route(`restaurant-manage?restaurant_room=${room}`);
-  }*/
-
-  get can_pay() {
-    return this.check_permissions('invoice', null, 'create');
-  }
-
-  can_open_order_manage(table) {
-    if (this.current_user === 'Administrator' || this.can_pay) return true;
-
-    if (table.data.current_user !== this.current_user && table.data.orders_count > 0) {
-      if (this.restrictions.restricted_to_owner_table) {
-        return this.check_permissions('order', null, 'manage');
-      }
-    }
-
-    return true;
-  }
-
   PMName(process_manage) {
     return 'process_manage' + process_manage;
   }
@@ -1207,13 +1283,19 @@ RestaurantManage = class RestaurantManage {
     return this.#current_user;
   }
 
+  /**
+   * Establece el usuario actual y emite evento de cambio
+   * @param {string} user - ID del nuevo usuario
+   */
   set_current_user(user) {
     this.#current_user = user;
-    // Emitimos un evento para notificar el cambio de usuario
     this.emit_user_change(user);
   }
 
-  // Método para emitir el evento de cambio de usuario
+  /**
+   * Emite un evento de cambio de usuario
+   * @param {string} user - ID del usuario que cambió
+   */
   emit_user_change(user) {
     const event = new CustomEvent('rm_user_changed', {
       detail: {
@@ -1224,7 +1306,10 @@ RestaurantManage = class RestaurantManage {
     window.dispatchEvent(event);
   }
 
-  // Método para suscribirse a cambios de usuario
+  /**
+   * Suscribe una función al evento de cambio de usuario
+   * @param {Function} callback - Función a ejecutar cuando cambie el usuario
+   */
   subscribe_to_user_changes(callback) {
     window.addEventListener('rm_user_changed', (event) => {
       callback(event.detail);
