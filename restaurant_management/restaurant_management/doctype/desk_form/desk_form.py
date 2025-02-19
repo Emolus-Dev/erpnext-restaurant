@@ -10,38 +10,39 @@ from __future__ import unicode_literals
 import json
 import os
 
-from six import iteritems
-from six.moves.urllib.parse import urlencode
-
 import frappe
+
 from frappe import _, scrub
 from frappe.custom.doctype.customize_form.customize_form import docfield_properties
-from frappe.modules.utils import export_module_json, get_doc_module
 from frappe.model.document import Document
+from frappe.modules.utils import export_module_json, get_doc_module
 
 
 class DeskForm(Document):
     def updateJsonFile(self):
-        app = frappe.db.get_value("Module Def", self.module, "app_name")
-        path = os.path.abspath(os.path.dirname(__file__))
-        path = os.path.join(path.split("apps")[0], "apps", app, app, app, "desk_form")
+        try:
+            app = frappe.db.get_value("Module Def", self.module, "app_name")
+            path = os.path.abspath(os.path.dirname(__file__))
+            path = os.path.join(path.split("apps")[0], "apps", app, app, app, "desk_form")
 
-        file_name = self.name.replace("-", "_")
+            file_name = self.name.replace("-", "_")
 
-        file_path = os.path.join(path, file_name, file_name + ".json")
+            file_path = os.path.join(path, file_name, file_name + ".json")
 
-        jsonFile = open(file_path, "r")  # Open the JSON file for reading
-        data = json.load(jsonFile)  # Read the JSON into the buffer
-        jsonFile.close()  # Close the JSON file
+            jsonFile = open(file_path, "r")  # Open the JSON file for reading
+            data = json.load(jsonFile)  # Read the JSON into the buffer
+            jsonFile.close()  # Close the JSON file
 
-        ## Working with buffered content
-        tmp = data
-        tmp["docstatus"] = 1
+            ## Working with buffered content
+            tmp = data
+            tmp["docstatus"] = 1
 
-        ## Save our changes to JSON file
-        jsonFile = open(file_path, "w+")
-        jsonFile.write(json.dumps(tmp), indent=2)  # write the buffer to the file
-        jsonFile.close()
+            ## Save our changes to JSON file
+            jsonFile = open(file_path, "w+")
+            jsonFile.write(json.dumps(tmp), indent=2)  # write the buffer to the file
+            jsonFile.close()
+        except Exception:
+            print(f"Error updating JSON file: {frappe.get_traceback()}")
 
     def after_delete(self):
         self.updateJsonFile()
