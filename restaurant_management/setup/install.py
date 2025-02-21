@@ -134,20 +134,44 @@ def create_desk_forms():
 
                 if extension in [".json"]:
                     abspath = os.path.join(dirpath, filename)
-                    with open(abspath) as f:
-                        form_data = json.load(f)
+                    try:
+                        with open(abspath) as f:
+                            form_data = json.load(f)
 
-                        # Verificamos si el formulario ya existe
-                        existing_form = frappe.db.exists("Desk Form", form_data.get("name"))
+                            # Verificamos si el formulario ya existe
+                            existing_form = frappe.db.exists("Desk Form", form_data.get("name"))
 
-                        if existing_form:
-                            print("    Updating Desk Form: {}".format(form_data.get("name")))
-                            desk_form = frappe.get_doc("Desk Form", existing_form)
-                            desk_form.update(form_data)
-                            desk_form.save()
-                        else:
-                            print("    Creating new Desk Form: {}".format(form_data.get("name")))
-                            insert_desk_form(form_data)
+                            if existing_form:
+                                print("    Updating Desk Form: {}".format(form_data.get("name")))
+                                try:
+                                    # Intentamos obtener y actualizar el documento existente
+                                    desk_form = frappe.get_doc("Desk Form", existing_form)
+                                    desk_form.update(form_data)
+
+                                    # Usamos flags para evitar problemas de versión
+                                    desk_form.flags.ignore_version = True
+                                    desk_form.flags.ignore_if_duplicate = True
+                                    desk_form.flags.ignore_permissions = True
+
+                                    # Guardamos con opciones para evitar errores de timestamp
+                                    desk_form.save(ignore_version=True, ignore_permissions=True)
+                                    frappe.db.commit()
+                                except Exception as e:
+                                    print(f"    Error updating Desk Form {form_data.get('name')}: {str(e)}")
+                                    # Si falla la actualización, intentamos recrear el documento
+                                    try:
+                                        frappe.delete_doc("Desk Form", existing_form, force=True)
+                                        insert_desk_form(form_data)
+                                        frappe.db.commit()
+                                    except Exception as e2:
+                                        print(f"    Error recreating Desk Form {form_data.get('name')}: {str(e2)}")
+                            else:
+                                print("    Creating new Desk Form: {}".format(form_data.get("name")))
+                                insert_desk_form(form_data)
+                                frappe.db.commit()
+                    except Exception as e:
+                        print(f"    Error processing file {filename}: {str(e)}")
+                        continue
 
     print("Building Desk Forms Complete")
 
