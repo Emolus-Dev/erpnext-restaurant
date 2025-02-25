@@ -255,3 +255,39 @@ def get_session_info() -> frappe._dict | Any:
 @frappe.whitelist()
 def get_user_permissions_erp(user) -> dict | Any | frappe._dict:
     return get_user_permissions(user)
+
+
+@frappe.whitelist()
+def verify_user_pin(user: str, pin: str) -> dict:
+    """
+    Verifica el PIN de un usuario para el cambio de usuario en el POS
+
+    Args:
+        user (str): ID del usuario a verificar
+        pin (str): PIN ingresado para verificación
+
+    Returns:
+        dict: Resultado de la verificación con clave 'success'
+    """
+    try:
+        # Obtenemos el PIN almacenado del usuario
+        user_doc = frappe.get_doc("User", user)
+
+        # Verificamos si el usuario tiene un campo para PIN
+        if not hasattr(user_doc, "restaurant_pin"):
+            frappe.throw(f"El usuario {user} no tiene un PIN configurado")
+
+        if not user_doc.restaurant_pin:
+            frappe.throw(f"El usuario {user} no tiene un PIN configurado")
+
+        # Verificamos el PIN
+        pin_decrypted = user_doc.get_password("restaurant_pin")
+        if pin == pin_decrypted:
+            return {"success": True}
+        else:
+            # PIN incorrecto
+            return {"success": False, "message": "PIN incorrecto"}
+
+    except Exception:
+        frappe.log_error(f"Error al verificar PIN: {frappe.get_traceback()}", "POS PIN Verification")
+        return {"success": False, "message": f"Error al verificar PIN: {frappe.get_traceback()}"}

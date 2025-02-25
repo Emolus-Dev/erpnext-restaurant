@@ -30,7 +30,10 @@ doc_events = {
 # app_include_css = get_assets_css()
 app_include_js = get_assets()
 
-after_migrate = "restaurant_management.setup.install.after_install"
+after_migrate = [
+    "restaurant_management.setup.install.after_install",
+    "restaurant_management.setup.custom_fields.insert_custom_fields",
+]
 after_install = "restaurant_management.setup.install.after_install"
 
 jinja = {

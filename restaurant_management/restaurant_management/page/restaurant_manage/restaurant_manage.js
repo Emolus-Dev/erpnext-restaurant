@@ -1007,63 +1007,336 @@ RestaurantManage = class RestaurantManage {
   async _handle_user_change(userId) {
     if (userId === this.current_user) return;
 
+    // Mostramos el modal de PIN antes de continuar
+    const pinVerified = await this._show_pin_verification_modal(userId);
+    if (!pinVerified) return; // Si el PIN no es verificado, cancelamos el cambio
+
     frappe.dom.freeze(__('Cambiando usuario...'));
 
-    try {
-      // Llamamos al endpoint de cambio de usuario
-      const impersonateResult = await frappe.xcall('restaurant_management.api.impersonate', {
-        user: userId,
-        reason: '',
-      });
+    // try {
+    //   // Llamamos al endpoint de cambio de usuario
+    //   const impersonateResult = await frappe.xcall('restaurant_management.api.impersonate', {
+    //     user: userId,
+    //     reason: '',
+    //   });
 
-      if (!impersonateResult || impersonateResult.error) {
-        throw new Error(impersonateResult?.error || __('Error al cambiar de usuario'));
+    //   if (!impersonateResult || impersonateResult.error) {
+    //     throw new Error(impersonateResult?.error || __('Error al cambiar de usuario'));
+    //   }
+
+    //   // Actualizamos las cookies de sesión y datos del usuario
+    //   try {
+    //     const userData = await frappe.xcall('frappe.auth.get_logged_user');
+
+    //     // Actualizamos los defaults del usuario si existen
+    //     if (userData && userData.defaults) {
+    //       frappe.defaults.update_user_defaults(userData.defaults);
+    //     }
+    //   } catch (error) {
+    //     console.warn('Error al obtener datos del usuario:', error);
+    //     // Continuamos aunque falle la obtención de datos del usuario
+    //   }
+
+    //   // Actualizamos el usuario global y local
+    //   frappe.session.user = userId;
+    //   this.set_current_user(userId);
+
+    //   // Forzamos una recarga de los permisos del usuario
+    //   try {
+    //     await frappe.xcall('restaurant_management.api.get_user_permissions_erp', { user: userId });
+    //   } catch (error) {
+    //     console.warn('Error al recargar permisos:', error);
+    //   }
+
+    //   // Reinicializamos el estado
+    //   await this._reinitialize_app_state();
+
+    //   // Forzamos una actualización de la sesión
+    //   try {
+    //     await frappe.xcall('restaurant_management.api.get_session_info');
+    //   } catch (error) {
+    //     console.warn('Error al actualizar sesión:', error);
+    //   }
+
+    //   frappe.show_alert({
+    //     message: __(`Usuario cambiado a ${userId}`),
+    //     indicator: 'green',
+    //   });
+    // } catch (error) {
+    //   console.error('Error en cambio de usuario:', error);
+    //   frappe.throw(__('Error al cambiar de usuario: ') + (error.message || __('Error desconocido')));
+    // } finally {
+    //   frappe.dom.unfreeze();
+    // }
+  }
+
+  /**
+   * Muestra un modal con un pad numérico para verificar el PIN del usuario
+   * @param {string} userId - ID del usuario a verificar
+   * @returns {Promise<boolean>} - Promesa que resuelve a true si el PIN es correcto
+   * @private
+   */
+  _show_pin_verification_modal(userId) {
+    return new Promise((resolve) => {
+      // PAD para ingresar el PIN
+      const pinPadStyleId = 'pin-pad-styles';
+      if (!document.getElementById(pinPadStyleId)) {
+        const styleSheet = document.createElement('style');
+        styleSheet.id = pinPadStyleId;
+        styleSheet.textContent = `
+          .pin-verification-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+          }
+
+          .pin-modal-content {
+            background-color: #fff;
+            border-radius: 12px;
+            width: 360px;
+            max-width: 90%;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+          }
+
+          .pin-modal-header {
+            padding: 16px;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+          }
+
+          .pin-modal-header h3 {
+            margin: 0;
+            font-size: 18px;
+            font-weight: 600;
+            color: #111827;
+          }
+
+          .pin-modal-body {
+            padding: 24px;
+          }
+
+          .pin-display {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 24px;
+          }
+
+          .pin-digit {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background-color: #e5e7eb;
+            margin: 0 8px;
+            transition: background-color 0.2s;
+          }
+
+          .pin-digit.filled {
+            background-color: #4f46e5;
+          }
+
+          .pin-keypad {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+          }
+
+          .pin-key {
+            background-color: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+          }
+
+          .pin-key:hover {
+            background-color: #f3f4f6;
+            transform: translateY(-2px);
+          }
+
+          .pin-key:active {
+            background-color: #e5e7eb;
+            transform: translateY(0);
+          }
+
+          .pin-key.action {
+            background-color: #f3f4f6;
+            font-size: 16px;
+          }
+
+          .pin-key.clear {
+            color: #ef4444;
+          }
+
+          .pin-key.enter {
+            color: #10b981;
+          }
+
+          .pin-error {
+            color: #ef4444;
+            text-align: center;
+            margin-top: 16px;
+            font-size: 14px;
+            height: 20px;
+          }
+        `;
+        document.head.appendChild(styleSheet);
       }
 
-      // Actualizamos las cookies de sesión y datos del usuario
-      try {
-        const userData = await frappe.xcall('frappe.auth.get_logged_user');
+      // html modal de PIN
+      const pinModalHTML = `
+        <div class="pin-verification-modal">
+          <div class="pin-modal-content">
+            <div class="pin-modal-header">
+              <h3>${__('Ingrese PIN')}</h3>
+              <button class="close-button pin-close">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="18" y1="6" x2="6" y2="18"></line>
+                  <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+              </button>
+            </div>
+            <div class="pin-modal-body">
+              <div class="pin-display">
+                <div class="pin-digit" data-index="0"></div>
+                <div class="pin-digit" data-index="1"></div>
+                <div class="pin-digit" data-index="2"></div>
+                <div class="pin-digit" data-index="3"></div>
+              </div>
+              <div class="pin-keypad">
+                <div class="pin-key" data-key="1">1</div>
+                <div class="pin-key" data-key="2">2</div>
+                <div class="pin-key" data-key="3">3</div>
+                <div class="pin-key" data-key="4">4</div>
+                <div class="pin-key" data-key="5">5</div>
+                <div class="pin-key" data-key="6">6</div>
+                <div class="pin-key" data-key="7">7</div>
+                <div class="pin-key" data-key="8">8</div>
+                <div class="pin-key" data-key="9">9</div>
+                <div class="pin-key action clear" data-key="clear">${__('Borrar')}</div>
+                <div class="pin-key" data-key="0">0</div>
+                <div class="pin-key action enter" data-key="enter">${__('Entrar')}</div>
+              </div>
+              <div class="pin-error"></div>
+            </div>
+          </div>
+        </div>
+      `;
 
-        // Actualizamos los defaults del usuario si existen
-        if (userData && userData.defaults) {
-          frappe.defaults.update_user_defaults(userData.defaults);
+      // modal al DOM
+      const pinModalContainer = document.createElement('div');
+      pinModalContainer.id = 'pin-modal-container';
+      pinModalContainer.innerHTML = pinModalHTML;
+      document.body.appendChild(pinModalContainer);
+
+      // variables para manejar el PIN
+      let currentPin = '';
+      const maxPinLength = 4;
+      const pinDigits = document.querySelectorAll('.pin-digit');
+      const pinError = document.querySelector('.pin-error');
+
+      // Función para actualizar la visualización del PIN
+      const updatePinDisplay = () => {
+        pinDigits.forEach((digit, index) => {
+          if (index < currentPin.length) {
+            digit.classList.add('filled');
+          } else {
+            digit.classList.remove('filled');
+          }
+        });
+      };
+
+      // Función para verificar el PIN
+      const verifyPin = async () => {
+        if (currentPin.length !== maxPinLength) {
+          pinError.textContent = __('El PIN debe tener 4 dígitos');
+          return;
         }
-      } catch (error) {
-        console.warn('Error al obtener datos del usuario:', error);
-        // Continuamos aunque falle la obtención de datos del usuario
-      }
 
-      // Actualizamos el usuario global y local
-      frappe.session.user = userId;
-      this.set_current_user(userId);
+        try {
+          // Se verifica el PIN con el servidor
+          const result = await frappe.xcall('restaurant_management.api.verify_user_pin', {
+            user: userId,
+            pin: currentPin,
+          });
 
-      // Forzamos una recarga de los permisos del usuario
-      try {
-        await frappe.xcall('restaurant_management.api.get_user_permissions_erp', { user: userId });
-      } catch (error) {
-        console.warn('Error al recargar permisos:', error);
-      }
+          if (result && result.success) {
+            // PIN correcto, cerramos el modal y continuamos con el cambio de usuario
+            frappe.show_alert({
+              message: __('PIN correcto'),
+              indicator: 'green',
+            });
+            document.getElementById('pin-modal-container').remove();
+            resolve(true);
+          } else {
+            // PIN incorrecto
+            frappe.show_alert({
+              message: __('PIN incorrecto'),
+              indicator: 'red',
+            });
+            pinError.textContent = __('PIN incorrecto');
+            currentPin = '';
+            updatePinDisplay();
+          }
+        } catch (error) {
+          frappe.show_alert({
+            message: __('Error al verificar PIN'),
+            indicator: 'red',
+          });
+          console.error('Error al verificar PIN:', error);
+          pinError.textContent = __('Error al verificar PIN');
+          currentPin = '';
+          updatePinDisplay();
+        }
+      };
 
-      // Reinicializamos el estado
-      await this._reinitialize_app_state();
+      // Manejadores de eventos para el teclado numérico
+      document.querySelectorAll('.pin-key').forEach((key) => {
+        key.addEventListener('click', () => {
+          const keyValue = key.getAttribute('data-key');
 
-      // Forzamos una actualización de la sesión
-      try {
-        await frappe.xcall('restaurant_management.api.get_session_info');
-      } catch (error) {
-        console.warn('Error al actualizar sesión:', error);
-      }
+          if (keyValue === 'clear') {
+            // Borrar el último dígito
+            currentPin = currentPin.slice(0, -1);
+            pinError.textContent = '';
+          } else if (keyValue === 'enter') {
+            // Verificar el PIN
+            verifyPin();
+          } else if (currentPin.length < maxPinLength) {
+            // Añadir dígito
+            currentPin += keyValue;
+            pinError.textContent = '';
 
-      frappe.show_alert({
-        message: __(`Usuario cambiado a ${userId}`),
-        indicator: 'green',
+            // if (currentPin.length === maxPinLength) {
+            //   setTimeout(verifyPin, 300);
+            // }
+          }
+
+          updatePinDisplay();
+        });
       });
-    } catch (error) {
-      console.error('Error en cambio de usuario:', error);
-      frappe.throw(__('Error al cambiar de usuario: ') + (error.message || __('Error desconocido')));
-    } finally {
-      frappe.dom.unfreeze();
-    }
+
+      // Manejador para cerrar el modal
+      document.querySelector('.pin-close').addEventListener('click', () => {
+        document.getElementById('pin-modal-container').remove();
+        resolve(false);
+      });
+    });
   }
 
   /**
