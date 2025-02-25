@@ -1078,7 +1078,7 @@ RestaurantManage = class RestaurantManage {
    */
   _show_pin_verification_modal(userId) {
     return new Promise((resolve) => {
-      // PAD para ingresar el PIN
+      // Primero creamos y agregamos los estilos para el pad numérico
       const pinPadStyleId = 'pin-pad-styles';
       if (!document.getElementById(pinPadStyleId)) {
         const styleSheet = document.createElement('style');
@@ -1194,11 +1194,18 @@ RestaurantManage = class RestaurantManage {
             font-size: 14px;
             height: 20px;
           }
+
+          .pin-keyboard-hint {
+            text-align: center;
+            margin-top: 16px;
+            font-size: 12px;
+            color: #6b7280;
+          }
         `;
         document.head.appendChild(styleSheet);
       }
 
-      // html modal de PIN
+      // Creamos el HTML para el modal de PIN
       const pinModalHTML = `
         <div class="pin-verification-modal">
           <div class="pin-modal-content">
@@ -1233,18 +1240,19 @@ RestaurantManage = class RestaurantManage {
                 <div class="pin-key action enter" data-key="enter">${__('Entrar')}</div>
               </div>
               <div class="pin-error"></div>
+              <div class="pin-keyboard-hint">${__('También puede usar el teclado numérico')}</div>
             </div>
           </div>
         </div>
       `;
 
-      // modal al DOM
+      // Agregamos el modal al DOM
       const pinModalContainer = document.createElement('div');
       pinModalContainer.id = 'pin-modal-container';
       pinModalContainer.innerHTML = pinModalHTML;
       document.body.appendChild(pinModalContainer);
 
-      // variables para manejar el PIN
+      // Variables para manejar el PIN
       let currentPin = '';
       const maxPinLength = 4;
       const pinDigits = document.querySelectorAll('.pin-digit');
@@ -1259,6 +1267,27 @@ RestaurantManage = class RestaurantManage {
             digit.classList.remove('filled');
           }
         });
+      };
+
+      // Función para procesar la entrada de un dígito
+      const processDigit = (digit) => {
+        if (currentPin.length < maxPinLength) {
+          currentPin += digit;
+          pinError.textContent = '';
+          updatePinDisplay();
+
+          // Si alcanzamos la longitud máxima, verificamos automáticamente
+          // if (currentPin.length === maxPinLength) {
+          //   setTimeout(verifyPin, 300);
+          // }
+        }
+      };
+
+      // Función para borrar el último dígito
+      const clearLastDigit = () => {
+        currentPin = currentPin.slice(0, -1);
+        pinError.textContent = '';
+        updatePinDisplay();
       };
 
       // Función para verificar el PIN
@@ -1282,6 +1311,7 @@ RestaurantManage = class RestaurantManage {
               indicator: 'green',
             });
             document.getElementById('pin-modal-container').remove();
+            document.removeEventListener('keydown', handleKeyDown);
             resolve(true);
           } else {
             // PIN incorrecto
@@ -1305,37 +1335,64 @@ RestaurantManage = class RestaurantManage {
         }
       };
 
-      // Manejadores de eventos para el teclado numérico
+      // Manejador de eventos para el teclado físico
+      const handleKeyDown = (event) => {
+        event.stopPropagation();
+
+        const key = event.key;
+
+        // Verificamos si es un número del 0-9
+        if (/^[0-9]$/.test(key)) {
+          processDigit(key);
+        }
+        // Tecla Enter para verificar
+        else if (key === 'Enter') {
+          verifyPin();
+        }
+        // Tecla Backspace o Delete para borrar los dígitos
+        else if (key === 'Backspace' || key === 'Delete') {
+          clearLastDigit();
+        }
+        // Tecla Escape para cerrar el modal
+        else if (key === 'Escape') {
+          document.getElementById('pin-modal-container').remove();
+          document.removeEventListener('keydown', handleKeyDown);
+          resolve(false);
+        }
+      };
+
+      // Agregamos el listener para el teclado
+      document.addEventListener('keydown', handleKeyDown);
+
+      // Manejadores de eventos para el teclado numérico en pantalla
       document.querySelectorAll('.pin-key').forEach((key) => {
         key.addEventListener('click', () => {
           const keyValue = key.getAttribute('data-key');
 
           if (keyValue === 'clear') {
-            // Borrar el último dígito
-            currentPin = currentPin.slice(0, -1);
-            pinError.textContent = '';
+            clearLastDigit();
           } else if (keyValue === 'enter') {
-            // Verificar el PIN
             verifyPin();
-          } else if (currentPin.length < maxPinLength) {
-            // Añadir dígito
-            currentPin += keyValue;
-            pinError.textContent = '';
-
-            // if (currentPin.length === maxPinLength) {
-            //   setTimeout(verifyPin, 300);
-            // }
+          } else {
+            processDigit(keyValue);
           }
-
-          updatePinDisplay();
         });
       });
 
       // Manejador para cerrar el modal
       document.querySelector('.pin-close').addEventListener('click', () => {
         document.getElementById('pin-modal-container').remove();
+        document.removeEventListener('keydown', handleKeyDown);
         resolve(false);
       });
+
+      // Enfocamos el modal para capturar eventos de teclado inmediatamente
+      setTimeout(() => {
+        const modalElement = document.querySelector('.pin-verification-modal');
+        if (modalElement) {
+          modalElement.focus();
+        }
+      }, 100);
     });
   }
 
