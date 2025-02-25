@@ -1009,65 +1009,66 @@ RestaurantManage = class RestaurantManage {
 
     // Mostramos el modal de PIN antes de continuar
     const pinVerified = await this._show_pin_verification_modal(userId);
+    console.log('pinVerified', pinVerified);
     if (!pinVerified) return; // Si el PIN no es verificado, cancelamos el cambio
 
     frappe.dom.freeze(__('Cambiando usuario...'));
 
-    // try {
-    //   // Llamamos al endpoint de cambio de usuario
-    //   const impersonateResult = await frappe.xcall('restaurant_management.api.impersonate', {
-    //     user: userId,
-    //     reason: '',
-    //   });
+    try {
+      // Llamamos al endpoint de cambio de usuario
+      const impersonateResult = await frappe.xcall('restaurant_management.api.impersonate', {
+        user: userId,
+        reason: '',
+      });
 
-    //   if (!impersonateResult || impersonateResult.error) {
-    //     throw new Error(impersonateResult?.error || __('Error al cambiar de usuario'));
-    //   }
+      if (!impersonateResult || impersonateResult.error) {
+        throw new Error(impersonateResult?.error || __('Error al cambiar de usuario'));
+      }
 
-    //   // Actualizamos las cookies de sesión y datos del usuario
-    //   try {
-    //     const userData = await frappe.xcall('frappe.auth.get_logged_user');
+      // Actualizamos las cookies de sesión y datos del usuario
+      try {
+        const userData = await frappe.xcall('frappe.auth.get_logged_user');
 
-    //     // Actualizamos los defaults del usuario si existen
-    //     if (userData && userData.defaults) {
-    //       frappe.defaults.update_user_defaults(userData.defaults);
-    //     }
-    //   } catch (error) {
-    //     console.warn('Error al obtener datos del usuario:', error);
-    //     // Continuamos aunque falle la obtención de datos del usuario
-    //   }
+        // Actualizamos los defaults del usuario si existen
+        if (userData && userData.defaults) {
+          frappe.defaults.update_user_defaults(userData.defaults);
+        }
+      } catch (error) {
+        console.warn('Error al obtener datos del usuario:', error);
+        // Continuamos aunque falle la obtención de datos del usuario
+      }
 
-    //   // Actualizamos el usuario global y local
-    //   frappe.session.user = userId;
-    //   this.set_current_user(userId);
+      // Actualizamos el usuario global y local
+      frappe.session.user = userId;
+      this.set_current_user(userId);
 
-    //   // Forzamos una recarga de los permisos del usuario
-    //   try {
-    //     await frappe.xcall('restaurant_management.api.get_user_permissions_erp', { user: userId });
-    //   } catch (error) {
-    //     console.warn('Error al recargar permisos:', error);
-    //   }
+      // Forzamos una recarga de los permisos del usuario
+      try {
+        await frappe.xcall('restaurant_management.api.get_user_permissions_erp', { user: userId });
+      } catch (error) {
+        console.warn('Error al recargar permisos:', error);
+      }
 
-    //   // Reinicializamos el estado
-    //   await this._reinitialize_app_state();
+      // Reinicializamos el estado
+      await this._reinitialize_app_state();
 
-    //   // Forzamos una actualización de la sesión
-    //   try {
-    //     await frappe.xcall('restaurant_management.api.get_session_info');
-    //   } catch (error) {
-    //     console.warn('Error al actualizar sesión:', error);
-    //   }
+      // Forzamos una actualización de la sesión
+      try {
+        await frappe.xcall('restaurant_management.api.get_session_info');
+      } catch (error) {
+        console.warn('Error al actualizar sesión:', error);
+      }
 
-    //   frappe.show_alert({
-    //     message: __(`Usuario cambiado a ${userId}`),
-    //     indicator: 'green',
-    //   });
-    // } catch (error) {
-    //   console.error('Error en cambio de usuario:', error);
-    //   frappe.throw(__('Error al cambiar de usuario: ') + (error.message || __('Error desconocido')));
-    // } finally {
-    //   frappe.dom.unfreeze();
-    // }
+      frappe.show_alert({
+        message: __(`Usuario cambiado a ${userId}`),
+        indicator: 'green',
+      });
+    } catch (error) {
+      console.error('Error en cambio de usuario:', error);
+      frappe.throw(__('Error al cambiar de usuario: ') + (error.message || __('Error desconocido')));
+    } finally {
+      frappe.dom.unfreeze();
+    }
   }
 
   /**
@@ -1275,11 +1276,6 @@ RestaurantManage = class RestaurantManage {
           currentPin += digit;
           pinError.textContent = '';
           updatePinDisplay();
-
-          // Si alcanzamos la longitud máxima, verificamos automáticamente
-          // if (currentPin.length === maxPinLength) {
-          //   setTimeout(verifyPin, 300);
-          // }
         }
       };
 

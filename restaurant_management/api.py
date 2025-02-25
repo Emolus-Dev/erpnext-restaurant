@@ -275,10 +275,10 @@ def verify_user_pin(user: str, pin: str) -> dict:
 
         # Verificamos si el usuario tiene un campo para PIN
         if not hasattr(user_doc, "restaurant_pin"):
-            frappe.throw(f"El usuario {user} no tiene un PIN configurado")
+            frappe.msgprint(f"El usuario {user} no tiene un PIN configurado", alert=True, indicator="red")
 
         if not user_doc.restaurant_pin:
-            frappe.throw(f"El usuario {user} no tiene un PIN configurado")
+            frappe.msgprint(f"El usuario {user} no tiene un PIN configurado", alert=True, indicator="red")
 
         # Verificamos el PIN
         pin_decrypted = user_doc.get_password("restaurant_pin")
