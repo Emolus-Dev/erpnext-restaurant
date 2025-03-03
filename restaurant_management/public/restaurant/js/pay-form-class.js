@@ -314,7 +314,8 @@ class PayForm extends DeskForm {
       .then((r) => {
         let values = r.message;
 
-        console.log(RM.pos_profile.custom_print_format_pre_cuenta, values.default_print_type, RM.pos_profile.name);
+        console.log('Precuenta', RM.pos_profile.custom_print_format_pre_cuenta);
+        console.log('values', values);
 
         this.send2bridgeRemote(
           'Table Order',

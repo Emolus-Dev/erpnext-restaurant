@@ -499,6 +499,7 @@ class TableOrder(Document):
         self.tax = tax
         self.amount = amount
         self.save()
+        frappe.db.commit()
 
     def update_item(self, entry, unrestricted=False, synchronize_on_delete=True):
         if entry["qty"] == 0:
@@ -733,6 +734,7 @@ class TableOrder(Document):
         table = self._table
         items_to_return = []
         data_to_send = []
+
         for i in self.entry_items:
             item = frappe.get_doc("Order Entry Item", {"identifier": i.identifier})
             if item.status == status_attending:
@@ -744,19 +746,8 @@ class TableOrder(Document):
 
                 data_to_send.append(table.get_command_data(item))
 
-        frappe.log_error("new items in order", json.dumps(data_to_send, indent=2, default=str))
-
-        # try:
-        #     if data_to_send:
-        #         for added_data in data_to_send:
-        #             # Imprimir aquí
-        #             print_silently(self.doctype, self.name, "Orden Cocina", added_data.get("printer_name", "COCINA1"))
-
-        # except Exception:
-        #     frappe.log_error("error imprimir", frappe.get_traceback())
-
         self.reload()
-        # self.synchronize_data = dict(status=["Sent"])
+
         self.synchronize(dict(status=["Sent"]))
 
         return self.data()

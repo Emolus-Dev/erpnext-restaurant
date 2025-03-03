@@ -205,7 +205,7 @@ ProcessManage = class ProcessManage {
         // Se ejecuta desde la vista de centro de producción
         frappe.db.get_value('Restaurant Object', this.name, ['default_print_type', 'print_copies']).then((r) => {
           let values = r.message;
-          console.log(values, order, this.name, RM.pos_profile);
+          console.log('test', values, order, this.name, RM.pos_profile);
 
           this.send2bridgeRemoteProductioCenter(
             'Order Entry Item',
